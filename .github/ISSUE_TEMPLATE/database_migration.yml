@@ -1,0 +1,128 @@
+name: Tarefa de DB / Migration
+description: Registre alterações em banco de dados, migrations, seeders, índices ou scripts SQL.
+title: "[DB] "
+labels: ["type: database", "area: database", "status: triage"]
+assignees: []
+
+body:
+  - type: markdown
+    attributes:
+      value: |
+        Use este template para alterações relacionadas a banco de dados.
+
+        Inclua impacto, rollback e cuidados de execução sempre que possível.
+
+        ⚠️ Não inclua dumps reais, senhas, strings de conexão, tokens ou dados sensíveis.
+
+  - type: textarea
+    id: summary
+    attributes:
+      label: Resumo da alteração
+      description: Descreva de forma objetiva o que precisa ser alterado no banco.
+      placeholder: "Exemplo: Criar nova tabela para armazenar histórico de alterações realizadas por usuários."
+    validations:
+      required: true
+
+  - type: dropdown
+    id: change_type
+    attributes:
+      label: Tipo de alteração
+      options:
+        - Nova tabela
+        - Nova coluna
+        - Alteração de coluna
+        - Remoção de tabela ou coluna
+        - Índice / performance
+        - Chave estrangeira / relacionamento
+        - Seeder
+        - Script de ajuste de dados
+        - View / procedure / function / trigger
+        - Outro
+    validations:
+      required: true
+
+  - type: textarea
+    id: proposed_structure
+    attributes:
+      label: Estrutura proposta
+      description: Descreva a estrutura, migration, script ou ideia técnica da alteração.
+      placeholder: |
+        Exemplo:
+        - Criar tabela user_audit_logs
+        - Campos: id, user_id, action, payload, created_at
+        - Índice em user_id e created_at
+    validations:
+      required: false
+
+  - type: textarea
+    id: data_impact
+    attributes:
+      label: Impacto em dados existentes
+      description: Informe se dados existentes serão alterados, migrados, removidos ou recalculados.
+    validations:
+      required: true
+
+  - type: textarea
+    id: rollback_strategy
+    attributes:
+      label: Estratégia de rollback
+      description: Explique como desfazer a alteração caso algo dê errado.
+    validations:
+      required: true
+
+  - type: dropdown
+    id: execution_environment
+    attributes:
+      label: Ambiente previsto
+      options:
+        - Produção
+        - Homologação / Staging
+        - Desenvolvimento
+        - Local
+        - Todos os ambientes
+        - Não sei informar
+    validations:
+      required: true
+
+  - type: checkboxes
+    id: risks
+    attributes:
+      label: Riscos conhecidos
+      options:
+        - label: Pode travar tabela grande
+        - label: Pode exigir janela de manutenção
+        - label: Pode alterar dados existentes
+        - label: Pode remover dados
+        - label: Pode impactar relatórios
+        - label: Pode impactar API/frontend
+        - label: Pode exigir backup antes da execução
+        - label: Pode exigir validação pós-deploy
+        - label: Pode impactar performance
+
+  - type: textarea
+    id: validation_steps
+    attributes:
+      label: Como validar
+      description: Descreva como confirmar que a alteração foi aplicada corretamente.
+    validations:
+      required: true
+
+  - type: textarea
+    id: related_items
+    attributes:
+      label: Issues, PRs ou dependências relacionadas
+      description: Informe links ou referências de demandas relacionadas.
+    validations:
+      required: false
+
+  - type: checkboxes
+    id: checklist
+    attributes:
+      label: Checklist
+      options:
+        - label: Descrevi o impacto em dados existentes.
+          required: true
+        - label: Descrevi uma estratégia de rollback ou expliquei por que não se aplica.
+          required: true
+        - label: Removi ou ocultei dados sensíveis dos exemplos e scripts.
+          required: true
