@@ -1,0 +1,142 @@
+name: Novo endpoint (API)
+description: Registre a criação de um novo endpoint, contrato ou recurso de API.
+title: "[API] "
+labels: ["type: api", "area: backend", "area: api", "status: triage"]
+assignees: []
+
+body:
+  - type: markdown
+    attributes:
+      value: |
+        Use este template para criação de novos endpoints, recursos de API ou contratos de integração.
+
+        Para alteração em endpoint existente, este template também pode ser usado quando houver mudança relevante de contrato.
+
+        ⚠️ Não inclua tokens, credenciais, cookies, payloads confidenciais ou dados sensíveis.
+
+  - type: textarea
+    id: summary
+    attributes:
+      label: Resumo do endpoint
+      description: Descreva de forma objetiva o que o endpoint precisa fazer.
+    validations:
+      required: true
+
+  - type: input
+    id: route
+    attributes:
+      label: Método e rota
+      description: Informe o método HTTP e a rota esperada.
+      placeholder: "Exemplo: GET /api/v1/resources"
+    validations:
+      required: true
+
+  - type: dropdown
+    id: endpoint_type
+    attributes:
+      label: Tipo de operação
+      options:
+        - Listagem
+        - Consulta por ID
+        - Criação
+        - Atualização
+        - Remoção
+        - Upload / arquivo
+        - Download / exportação
+        - Ação / processamento
+        - Integração externa
+        - Outro
+    validations:
+      required: true
+
+  - type: textarea
+    id: business_rules
+    attributes:
+      label: Regras de negócio
+      description: Liste regras, validações, filtros, cálculos ou comportamentos esperados.
+    validations:
+      required: true
+
+  - type: textarea
+    id: request_payload
+    attributes:
+      label: Request esperada
+      description: Informe query params, body, headers ou exemplos de entrada, se aplicável.
+      render: json
+    validations:
+      required: false
+
+  - type: textarea
+    id: response_payload
+    attributes:
+      label: Response esperada
+      description: Informe o formato de resposta esperado, se souber.
+      render: json
+    validations:
+      required: false
+
+  - type: checkboxes
+    id: auth_permissions
+    attributes:
+      label: Autenticação e permissões
+      options:
+        - label: Requer autenticação
+        - label: Requer permissão específica
+        - label: Requer perfil administrativo
+        - label: Pode ser acessado por integração externa
+        - label: Deve bloquear usuários sem autorização
+        - label: Ainda precisa definir regra de acesso
+
+  - type: textarea
+    id: database_impact
+    attributes:
+      label: Impacto em banco de dados
+      description: Informe se será necessária migration, nova tabela, coluna, índice, seed ou query especial.
+    validations:
+      required: false
+
+  - type: textarea
+    id: error_handling
+    attributes:
+      label: Tratamento de erros
+      description: Liste erros esperados, validações e respostas de falha relevantes.
+    validations:
+      required: false
+
+  - type: textarea
+    id: acceptance_criteria
+    attributes:
+      label: Critérios de aceite
+      description: Liste o que precisa estar funcionando para considerar o endpoint concluído.
+    validations:
+      required: true
+
+  - type: textarea
+    id: validation_steps
+    attributes:
+      label: Como validar
+      description: Descreva como testar o endpoint.
+    validations:
+      required: true
+
+  - type: textarea
+    id: related_items
+    attributes:
+      label: Issues, PRs ou integrações relacionadas
+      description: Informe links ou referências de demandas relacionadas.
+    validations:
+      required: false
+
+  - type: checkboxes
+    id: checklist
+    attributes:
+      label: Checklist
+      options:
+        - label: Descrevi o método e a rota esperada.
+          required: true
+        - label: Descrevi regras de negócio e permissões esperadas.
+          required: true
+        - label: Descrevi como validar o endpoint.
+          required: true
+        - label: Removi ou ocultei dados sensíveis dos exemplos de payload.
+          required: true
