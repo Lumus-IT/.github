@@ -1,0 +1,127 @@
+name: Exigência legal
+description: Registre uma demanda originada por obrigação legal, fiscal, regulatória ou contratual.
+title: "[LEGAL] "
+labels: ["type: legal", "source: legal", "status: triage"]
+assignees: []
+
+body:
+  - type: markdown
+    attributes:
+      value: |
+        Use este template para demandas originadas por lei, norma, exigência fiscal, obrigação regulatória ou cláusula contratual.
+
+        ⚠️ Não inclua dados sensíveis, documentos confidenciais ou informações de clientes sem necessidade.
+
+  - type: textarea
+    id: summary
+    attributes:
+      label: Resumo da exigência
+      description: Descreva de forma objetiva qual exigência precisa ser atendida.
+      placeholder: "Exemplo: Adequar o sistema para registrar consentimento antes de permitir acesso a determinada funcionalidade."
+    validations:
+      required: true
+
+  - type: dropdown
+    id: requirement_type
+    attributes:
+      label: Tipo de exigência
+      options:
+        - Legal
+        - Fiscal / Tributária
+        - Regulatória
+        - Contratual
+        - Auditoria / Compliance
+        - Segurança / Privacidade
+        - Não sei informar
+    validations:
+      required: true
+
+  - type: input
+    id: source_reference
+    attributes:
+      label: Fonte ou referência
+      description: Informe lei, norma, contrato, auditoria, chamado ou referência que originou a demanda.
+      placeholder: "Exemplo: LGPD, contrato X, relatório de auditoria, norma interna, chamado do cliente"
+    validations:
+      required: false
+
+  - type: input
+    id: deadline
+    attributes:
+      label: Prazo ou data limite
+      placeholder: "Exemplo: 2026-06-30 ou antes da próxima auditoria"
+    validations:
+      required: false
+
+  - type: textarea
+    id: impact
+    attributes:
+      label: Impacto de não atender
+      description: Explique o risco, impacto operacional, financeiro, jurídico ou contratual.
+      placeholder: "Exemplo: Risco de não conformidade em auditoria, bloqueio de operação, multa contratual ou exposição indevida de dados."
+    validations:
+      required: true
+
+  - type: textarea
+    id: expected_adjustment
+    attributes:
+      label: Ajuste esperado
+      description: Descreva o que sistema, processo ou documentação precisa fazer para atender à exigência.
+      placeholder: |
+        Exemplo:
+        - Registrar aceite do usuário
+        - Armazenar data, IP e identificador do usuário
+        - Permitir consulta do histórico de aceites
+        - Bloquear acesso caso o aceite não exista
+    validations:
+      required: true
+
+  - type: dropdown
+    id: main_area
+    attributes:
+      label: Área principal
+      options:
+        - Frontend
+        - Backend
+        - API
+        - Banco de dados
+        - Infraestrutura / DevOps
+        - Documentação
+        - Produto / Regra de negócio
+        - Segurança / Privacidade
+        - Não sei informar
+    validations:
+      required: true
+
+  - type: textarea
+    id: acceptance_criteria
+    attributes:
+      label: Critérios de aceite
+      placeholder: |
+        - [ ] A regra exigida foi implementada
+        - [ ] As informações necessárias são registradas corretamente
+        - [ ] Permissões e bloqueios foram validados quando aplicável
+        - [ ] Logs/auditoria foram gerados quando aplicável
+        - [ ] Documentação foi atualizada, se necessário
+    validations:
+      required: true
+
+  - type: textarea
+    id: evidence
+    attributes:
+      label: Evidências e anexos
+      description: Inclua documentos, prints, links ou referências úteis. Remova informações sensíveis antes de publicar.
+    validations:
+      required: false
+
+  - type: checkboxes
+    id: checklist
+    attributes:
+      label: Checklist
+      options:
+        - label: Informei a origem da exigência ou expliquei por que ela ainda não está disponível.
+          required: true
+        - label: Descrevi o impacto de não atender à exigência.
+          required: true
+        - label: Removi ou ocultei dados sensíveis dos anexos e evidências.
+          required: true
