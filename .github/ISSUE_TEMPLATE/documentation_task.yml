@@ -1,0 +1,113 @@
+name: Tarefa de documentação
+description: Registre criação, revisão ou atualização de documentação técnica, funcional ou operacional.
+title: "[DOCS] "
+labels: ["type: documentation", "area: docs", "status: triage"]
+assignees: []
+
+body:
+  - type: markdown
+    attributes:
+      value: |
+        Use este template para criar, revisar ou atualizar documentação.
+
+        ⚠️ Não inclua senhas, tokens, dados de clientes, prints sensíveis ou informações internas desnecessárias.
+
+  - type: textarea
+    id: summary
+    attributes:
+      label: Resumo da documentação
+      description: Descreva de forma objetiva o que precisa ser documentado ou atualizado.
+      placeholder: "Exemplo: Documentar o fluxo de execução de testes locais e os requisitos para preparar o ambiente."
+    validations:
+      required: true
+
+  - type: dropdown
+    id: documentation_type
+    attributes:
+      label: Tipo de documentação
+      options:
+        - README
+        - Runbook / operação
+        - Guia técnico
+        - Guia funcional
+        - Onboarding
+        - Changelog / release notes
+        - Documentação de API
+        - Documentação de infraestrutura
+        - Documentação de testes
+        - Outro
+    validations:
+      required: true
+
+  - type: textarea
+    id: context
+    attributes:
+      label: Contexto
+      description: Explique por que essa documentação é necessária.
+    validations:
+      required: true
+
+  - type: input
+    id: target_location
+    attributes:
+      label: Local esperado
+      description: Informe arquivo, pasta, wiki, repositório ou local onde a documentação deve ficar.
+      placeholder: "Exemplo: docs/testing.md, README.md, docs/runbooks/deploy.md"
+    validations:
+      required: false
+
+  - type: textarea
+    id: expected_content
+    attributes:
+      label: Conteúdo esperado
+      description: Liste os tópicos que devem ser cobertos.
+      placeholder: |
+        Exemplo:
+        - Pré-requisitos
+        - Como configurar o ambiente
+        - Como executar os comandos principais
+        - Como validar o resultado
+        - Problemas comuns e soluções
+    validations:
+      required: true
+
+  - type: checkboxes
+    id: audience
+    attributes:
+      label: Público-alvo
+      options:
+        - label: Desenvolvedores
+        - label: DevOps / infraestrutura
+        - label: Suporte / operação
+        - label: QA / homologação
+        - label: Produto / gestão
+        - label: Cliente / usuário final
+        - label: Novos membros da equipe
+
+  - type: textarea
+    id: validation_steps
+    attributes:
+      label: Como validar
+      description: Explique como confirmar que a documentação ficou suficiente.
+    validations:
+      required: true
+
+  - type: textarea
+    id: references
+    attributes:
+      label: Referências e materiais de apoio
+      description: Inclua links, issues, PRs, arquivos, prints ou mensagens que ajudem na escrita. Remova dados sensíveis.
+    validations:
+      required: false
+
+  - type: checkboxes
+    id: checklist
+    attributes:
+      label: Checklist
+      options:
+        - label: Descrevi o conteúdo esperado.
+          required: true
+        - label: Informei o público-alvo ou deixei claro no contexto.
+          required: true
+        - label: Removi ou ocultei dados sensíveis das referências.
+          required: true
