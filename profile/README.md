@@ -20,3 +20,7 @@ Here are some ideas to get you started:
 - 👯 Estamos sempre buscando parceiros para nossa equipe
 - 📫 Você pode nos encontrar através do GitHub ou pelos e-mails contato@lumusit.com.br e gestao@lumusit.com.br
 - ⚡ Fun fact: somos mais do que uma fábrica de software, a Lumus pode te surpreender com outras soluções em TI, não deixe de nos contatar!
+
+## Guias
+
+- [Guia de Issues](../docs/github-issues.md)
