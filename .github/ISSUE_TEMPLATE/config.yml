@@ -1,0 +1,10 @@
+blank_issues_enabled: false
+
+contact_links:
+  - name: Guia de Issues
+    url: https://github.com/Lumus-IT/.github/blob/main/docs/github-issues.md
+    about: Consulte quando usar cada tipo de Issue, como relacionar demandas e como organizar tarefas cross-repo.
+
+  - name: Dúvida, alinhamento ou suporte interno
+    url: https://github.com/orgs/Lumus-IT/projects
+    about: Use o Projects da organização para acompanhar demandas, prioridades e status geral de cada produto.
