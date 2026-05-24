@@ -1,13 +1,13 @@
-## Resumo da alteração DevOps
+# Resumo da alteração DevOps
 
-Descreva a alteração de infraestrutura, deploy, automação, CI/CD, containers, servidores ou ambientes.
+— Descreva a alteração de infraestrutura, deploy, automação, CI/CD, containers, servidores ou ambientes.
 
 ---
 
 ## Issues relacionadas
 
 ```txt
-Closes #
+Fecha #
 Refs #
 ```
 
@@ -25,17 +25,17 @@ Refs #
 
 ## Mudanças realizadas
 
-- 
-- 
-- 
+- Descrever mudança 1
+- Descrever mudança 2
+- Descrever mudança 3
 
 ---
 
 ## Plano de execução
 
-1. 
-2. 
-3. 
+1. Preparar ambiente e pré-requisitos
+2. Executar alteração conforme sequência planejada
+3. Validar serviços e fluxos críticos
 
 ---
 
@@ -43,7 +43,7 @@ Refs #
 
 Explique como desfazer a alteração caso algo dê errado.
 
-- 
+- Informar comando, procedimento e ponto de restauração
 
 ---
 
@@ -53,6 +53,7 @@ Explique como desfazer a alteração caso algo dê errado.
 2. Conferir logs relevantes
 3. Validar fluxo principal da aplicação
 4. Validar monitoramento/alertas quando aplicável
+5. Se der errado, fugir para as montanhas
 
 ---
 

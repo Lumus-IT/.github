@@ -1,13 +1,13 @@
-## Resumo da documentação
+# Resumo da documentação
 
-Descreva a documentação criada, revisada ou atualizada.
+— Descreva a documentação criada, revisada ou atualizada.
 
 ---
 
 ## Issues relacionadas
 
 ```txt
-Closes #
+Fecha #
 Refs #
 ```
 
@@ -30,9 +30,9 @@ Refs #
 
 ## Conteúdo alterado
 
-- 
-- 
-- 
+- Descrever conteúdo 1
+- Descrever conteúdo 2
+- Descrever conteúdo 3
 
 ---
 

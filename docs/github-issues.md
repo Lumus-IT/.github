@@ -1,8 +1,40 @@
 # Guia de Issues
 
-Este documento orienta como escolher e usar os templates de Issues da organização.
+> Este documento orienta como escolher e usar os templates de Issues da organização.
 
-As Issues devem ser usadas para registrar bugs, funcionalidades, tarefas técnicas, exigências legais, mudanças de infraestrutura, documentação e demandas que envolvem múltiplos repositórios.
+— As Issues devem ser usadas para registrar bugs, funcionalidades, tarefas técnicas, exigências legais, mudanças de infraestrutura, documentação e demandas que envolvem múltiplos repositórios.
+
+## Sumário
+
+- [Princípios gerais](#princípios-gerais)
+- [Famílias de labels](#famílias-de-labels)
+  - [type:*](#type)
+  - [area:*](#area)
+  - [status:*](#status)
+  - [priority:*](#priority)
+  - [risk:*](#risk)
+  - [source:*](#source)
+- [Labels em Issues vs. Labels em Pull Requests](#labels-em-issues-vs-labels-em-pull-requests)
+  - [Labels recomendadas para Issues](#labels-recomendadas-para-issues)
+  - [Labels recomendadas para Pull Requests](#labels-recomendadas-para-pull-requests)
+  - [Exemplos de uso](#exemplos-de-uso)
+    - [Bug simples](#bug-simples)
+    - [Migration de banco](#migration-de-banco)
+- [Tipos de Issues](#tipos-de-issues)
+  - [Bug Report](#bug-report)
+  - [Nova funcionalidade](#nova-funcionalidade)
+  - [Exigência legal](#exigência-legal)
+  - [Tarefa de DB / Migration](#tarefa-de-db--migration)
+  - [Tarefa de DevOps](#tarefa-de-devops)
+  - [Tarefa de documentação](#tarefa-de-documentação)
+  - [Novo endpoint (API)](#novo-endpoint-api)
+  - [Tarefa cross-repo](#tarefa-cross-repo)
+- [Hierarquia recomendada](#hierarquia-recomendada)
+- [Quando usar cross-repo](#quando-usar-cross-repo)
+- [Onde abrir cada Issue](#onde-abrir-cada-issue)
+- [Relação entre tipos](#relação-entre-tipos)
+- [Boas práticas](#boas-práticas)
+- [Segurança](#segurança)
 
 ---
 
@@ -19,13 +51,228 @@ Antes de abrir uma Issue:
 
 ---
 
+## Famílias de labels
+
+As labels seguem uma organização por prefixos para facilitar filtros, relatórios e automações.
+
+### type:*
+
+— Indica o tipo principal da Issue.
+
+Exemplos:
+
+- type: bug
+- type: feature
+- type: database
+- type: devops
+- type: documentation
+- type: api
+- type: cross-repo
+- type: legal
+
+> Normalmente é aplicada automaticamente pelo template escolhido.
+
+---
+
+### area:*
+
+— Indica a área técnica ou funcional afetada.
+
+Exemplos:
+
+- area: frontend
+- area: backend
+- area: api
+- area: database
+- area: infra
+- area: docs
+- area: security
+- area: qa
+- area: product
+
+Pode ser usada em conjunto com type:*.
+
+Exemplo:
+
+- type: api
+- area: backend
+- area: api
+
+---
+
+### status:*
+
+— Indica o estado atual da Issue no fluxo de trabalho.
+
+Labels disponíveis:
+
+- status: triage — aguardando análise, classificação ou priorização
+- status: ready — pronta para desenvolvimento ou execução
+- status: in-review — em revisão, validação ou code review
+- status: needs-info — precisa de mais informações
+- status: blocked — bloqueada por dependência ou impedimento
+- status: canceled — cancelada, descartada, duplicada ou não será executada
+
+> Use status: canceled para demandas que não serão executadas, issues duplicadas, inválidas ou descartadas.
+
+Não apague a Issue nesses casos. Prefira comentar o motivo, relacionar a Issue correta quando houver duplicidade e encerrar a Issue.
+
+Exemplo:
+
+Issue cancelada por ser duplicada da #123.
+
+Labels:
+
+- status: canceled
+
+---
+
+### priority:*
+
+— Indica a prioridade de execução.
+
+Labels disponíveis:
+
+- priority: low
+- priority: medium
+- priority: high
+- priority: critical
+
+> A prioridade deve ser definida durante a triagem.
+
+---
+
+### risk:*
+
+— Indica riscos técnicos ou operacionais relevantes.
+
+Exemplos:
+
+- risk: security
+- risk: data-loss
+- risk: breaking-change
+- risk: production
+- risk: performance
+
+> Use essas labels quando a demanda exigir atenção extra em revisão, teste, deploy ou rollback.
+
+---
+
+### source:*
+
+— Indica a origem da demanda.
+
+Exemplos:
+
+- source: client
+- source: internal
+- source: support
+- source: legal
+- source: codex
+
+> Use para rastrear de onde a demanda veio.
+
+---
+
+## Labels em Issues vs. Labels em Pull Requests
+
+— Labels podem ser usadas tanto em Issues quanto em Pull Requests, mas com objetivos diferentes.
+
+A regra geral é:
+
+- **Issue** representa a demanda, problema, necessidade ou planejamento.
+- **Pull Request** representa a implementação, revisão técnica e o risco real da alteração.
+
+### Labels recomendadas para Issues
+
+Use nas Issues as labels que ajudam na gestão da demanda:
+
+- `type:*` — tipo principal da demanda
+- `area:*` — área afetada
+- `status:*` — estado atual da demanda
+- `priority:*` — prioridade de execução
+- `source:*` — origem da demanda
+- `risk:*` — riscos conhecidos, quando aplicável
+
+Exemplo:
+
+- `type: bug`
+- `area: frontend`
+- `status: ready`
+- `priority: medium`
+- `source: support`
+
+### Labels recomendadas para Pull Requests
+
+Use nos Pull Requests as labels que ajudam na revisão, validação e decisão de merge:
+
+- `type:*` — quando o PR representa claramente um tipo de entrega específico
+- `area:*` — área técnica alterada
+- `risk:*` — riscos técnicos ou operacionais da alteração
+
+Evite usar no PR labels de origem, prioridade ou status da demanda, como:
+
+- `source:*`
+- `priority:*`
+- `status: triage`
+- `status: ready`
+- `status: canceled`
+
+> Essas labels fazem mais sentido na Issue. O PR já possui estados próprios do GitHub, como draft, open, review requested, approved, changes requested, merged e closed.
+
+---
+
+## Exemplos de uso
+
+### Bug simples
+
+Issue:
+
+- `type: bug`
+- `area: frontend`
+- `priority: medium`
+- `status: ready`
+- `source: support`
+
+Pull Request:
+
+- `type: bug`
+- `area: frontend`
+
+Se houver risco de impacto em produção, adicionar também:
+
+- `risk: production`
+
+---
+
+### Migration de banco
+
+Issue:
+
+- `type: database`
+- `area: database`
+- `priority: high`
+- `status: ready`
+
+Pull Request:
+
+- `type: database`
+- `area: database`
+- `risk: data-loss`
+- `risk: production`
+
+> Use `risk: data-loss` quando a alteração puder modificar, remover, recalcular ou corromper dados existentes.  
+> Use `risk: production` quando a alteração exigir cuidado especial em deploy, janela de manutenção, backup, rollback ou validação pós-deploy.
+
+---
+
 ## Tipos de Issues
 
 ### Bug Report
 
-Use para reportar falhas, erros, regressões ou comportamentos inesperados.
+— Use para reportar falhas, erros, regressões ou comportamentos inesperados.
 
-Também deve ser usado para problemas visuais, textos incorretos, layout quebrado ou ajustes estéticos pequenos.
+> Também deve ser usado para problemas visuais, textos incorretos, layout quebrado ou ajustes estéticos pequenos.
 
 Exemplos:
 
@@ -47,7 +294,7 @@ status: triage
 
 ### Nova funcionalidade
 
-Use para solicitar uma nova funcionalidade, módulo, fluxo ou evolução relevante de produto.
+— Use para solicitar uma nova funcionalidade, módulo, fluxo ou evolução relevante de produto.
 
 Exemplos:
 
@@ -69,7 +316,7 @@ status: triage
 
 ### Exigência legal
 
-Use para demandas originadas por lei, norma, obrigação fiscal, exigência regulatória, auditoria, compliance ou contrato.
+— Use para demandas originadas por lei, norma, obrigação fiscal, exigência regulatória, auditoria, compliance ou contrato.
 
 Exemplos:
 
@@ -92,7 +339,7 @@ status: triage
 
 ### Tarefa de DB / Migration
 
-Use para alterações relacionadas a banco de dados, migrations, seeders, índices, scripts SQL, views, procedures, functions ou triggers.
+— Use para alterações relacionadas a banco de dados, migrations, seeders, índices, scripts SQL, views, procedures, functions ou triggers.
 
 Exemplos:
 
@@ -116,7 +363,7 @@ status: triage
 
 ### Tarefa de DevOps
 
-Use para demandas relacionadas a infraestrutura, deploy, CI/CD, containers, servidores, redes, ambientes, monitoramento ou automações.
+— Use para demandas relacionadas a infraestrutura, deploy, CI/CD, containers, servidores, redes, ambientes, monitoramento ou automações.
 
 Exemplos:
 
@@ -141,7 +388,7 @@ status: triage
 
 ### Tarefa de documentação
 
-Use para criar, revisar ou atualizar documentação técnica, funcional, operacional ou de onboarding.
+— Use para criar, revisar ou atualizar documentação técnica, funcional, operacional ou de onboarding.
 
 Exemplos:
 
@@ -165,9 +412,9 @@ status: triage
 
 ### Novo endpoint (API)
 
-Use para criação de novos endpoints, recursos de API ou contratos de integração.
+— Use para criação de novos endpoints, recursos de API ou contratos de integração.
 
-Também pode ser usado quando uma alteração em endpoint existente mudar significativamente contrato, request, response, permissões ou regra de negócio.
+> Também pode ser usado quando uma alteração em endpoint existente mudar significativamente contrato, request, response, permissões ou regra de negócio.
 
 Exemplos:
 
@@ -191,7 +438,7 @@ status: triage
 
 ### Tarefa cross-repo
 
-Use quando uma demanda envolver mais de um repositório, produto ou frente técnica.
+— Use quando uma demanda envolver mais de um repositório, produto ou frente técnica.
 
 A Issue cross-repo deve funcionar como Issue pai ou guarda-chuva. Ela centraliza o objetivo final, as dependências e os links para as Issues específicas de cada repositório.
 
@@ -242,7 +489,7 @@ Issues filhas ou relacionadas:
 
 ## Quando usar cross-repo
 
-Use uma Issue cross-repo quando:
+— Use uma Issue cross-repo quando:
 
 - a entrega depende de mais de um repositório;
 - há dependência entre frontend, backend, banco ou DevOps;
@@ -250,9 +497,7 @@ Use uma Issue cross-repo quando:
 - a demanda tem várias partes técnicas;
 - existe um objetivo de negócio maior que precisa ser acompanhado de forma centralizada.
 
-A Issue cross-repo não substitui as Issues técnicas específicas.
-
-Ela deve apontar para elas.
+A Issue cross-repo não substitui as Issues técnicas específicas. Ela deve apontar para elas.  
 
 Exemplo:
 
@@ -272,7 +517,7 @@ Exemplo:
 Use o repositório mais diretamente afetado.
 
 | Situação | Onde abrir |
-|---|---|
+| --- | --- |
 | Bug apenas no frontend | Repositório frontend |
 | Bug apenas no backend | Repositório backend |
 | Migration ou script SQL | Repositório backend ou repo responsável pelo banco |
@@ -286,7 +531,7 @@ Use o repositório mais diretamente afetado.
 
 ## Relação entre tipos
 
-Uma mesma entrega pode gerar várias Issues de tipos diferentes.
+> Uma mesma entrega pode gerar várias Issues de tipos diferentes.
 
 Exemplo de uma nova funcionalidade completa:
 
@@ -330,12 +575,18 @@ Bug Report
 - Informe como validar a entrega.
 - Use labels de prioridade e risco durante a triagem.
 - Atualize a Issue quando escopo, dependência ou prioridade mudar.
+- Não apague Issues duplicadas, inválidas ou canceladas; comente o motivo, aplique status: canceled e encerre a Issue.
+- Use status: needs-info quando a Issue não tiver informação suficiente para seguir.
+- Use status: blocked quando existir dependência externa, decisão pendente, acesso faltante ou impedimento técnico.
+- Use priority:* durante a triagem para indicar prioridade de execução.
+- Use risk:* quando a demanda exigir atenção extra em revisão, testes, deploy ou rollback.
 
 ---
 
 ## Segurança
 
-Antes de publicar qualquer informação, revise se há dados sensíveis.
+> [!IMPORTANT]
+> — Antes de publicar qualquer informação, revise se há dados sensíveis.  
 
 Não publique:
 

@@ -1,6 +1,6 @@
-## Resumo
+# Resumo
 
-Descreva de forma objetiva o que este PR altera.
+— Descreva de forma objetiva o que este PR altera.
 
 ---
 
@@ -36,33 +36,33 @@ Quando aplicável, prefira abrir o PR usando um template específico:
 Exemplos:
 
 ```txt
-Closes #123
+Fecha #123
 Refs #456
-Relacionado a Lumus-IT/elevare-nexus-api#789
+Relacionado a Lumus-IT/sgi#789
 ```
 
 ---
 
 ## Mudanças realizadas
 
-- 
-- 
-- 
+- descrever
+- lista
+- mudanças
 
 ---
 
 ## Como testar
 
 ```bash
-# Exemplo
+# Exemplo de comando
 php artisan test
 ```
 
 Passos manuais, se houver:
 
-1. 
-2. 
-3. 
+1. Clonar repositório
+2. Colocar seu fone de ouvido
+3. Ouvir uma música bem legal
 
 ---
 
@@ -81,7 +81,7 @@ Passos manuais, se houver:
 
 Detalhes:
 
-- 
+- Mais detalhes
 
 ---
 

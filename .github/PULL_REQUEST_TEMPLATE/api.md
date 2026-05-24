@@ -1,13 +1,13 @@
-## Resumo da alteração de API
+# Resumo da alteração de API
 
-Descreva o endpoint, contrato ou integração alterada.
+— Descreva o endpoint, contrato ou integração alterada.
 
 ---
 
 ## Issues relacionadas
 
 ```txt
-Closes #
+Fecha #
 Refs #
 ```
 
@@ -53,7 +53,7 @@ POST /api/v1/resources
 
 ## Regras de negócio e permissões
 
-- 
+- Informar regras, validações e permissões aplicadas ao endpoint
 
 ---
 
@@ -79,9 +79,9 @@ POST /api/v1/resources
 
 ## Como testar
 
-1. 
-2. 
-3. 
+1. Adicionar água
+2. Adicionar o miojo
+3. Ferver por 3 minutos
 
 ---
 

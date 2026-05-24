@@ -1,6 +1,6 @@
-## Resumo da funcionalidade
+# Resumo da funcionalidade
 
-Descreva a funcionalidade criada ou evoluída.
+— Descreva a funcionalidade criada ou evoluída.
 
 ---
 
@@ -13,7 +13,7 @@ Explique qual necessidade esta entrega resolve.
 ## Issues relacionadas
 
 ```txt
-Closes #
+Fecha #
 Refs #
 ```
 
@@ -21,9 +21,9 @@ Refs #
 
 ## Mudanças realizadas
 
-- 
-- 
-- 
+- Descrever mudança 1
+- Descrever mudança 2
+- Descrever mudança 3
 
 ---
 
@@ -31,7 +31,7 @@ Refs #
 
 Liste regras, validações e comportamentos importantes.
 
-- 
+- Informar regra principal e exceções relevantes
 
 ---
 
@@ -46,9 +46,13 @@ Liste regras, validações e comportamentos importantes.
 
 ## Como testar
 
-1. 
-2. 
-3. 
+1. Preparar ambiente e dados necessários
+2. Olhar ao seu redor pra ver se nenhum usuário vai te atrapalhar
+3. Foco no resultado, coloca o dedo na boca pra ver se está correto ou errado e se está bem ou mal alimentado e se está com a boca aberta ou fechada e se está com o nariz aberto ou fechado e se está com os olhos abertos ou fechados e se está com os dedos abertos ou fechados
+4. Esse passo de cima eu deixei a IA ir completando pra ver no que dava
+5. Usar IA com moderação
+6. Beba com moderação
+7. No final, validar resultado esperado da feature
 
 ---
 

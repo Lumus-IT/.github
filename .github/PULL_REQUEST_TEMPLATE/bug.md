@@ -1,13 +1,13 @@
-## Resumo do bug corrigido
+# Resumo do bug corrigido
 
-Descreva o problema corrigido e o comportamento esperado após a correção.
+— Descreva o problema corrigido e o comportamento esperado após a correção.
 
 ---
 
 ## Issues relacionadas
 
 ```txt
-Closes #
+Fecha #
 ```
 
 ---
@@ -20,9 +20,9 @@ Explique a causa raiz, se conhecida.
 
 ## Correção realizada
 
-- 
-- 
-- 
+- Descrever correção 1
+- Descrever correção 2
+- Descrever correção 3
 
 ---
 
@@ -43,7 +43,7 @@ Explique a causa raiz, se conhecida.
 
 Detalhes:
 
-- 
+- Informar impacto, limites da correção e cenários observados
 
 ---
 

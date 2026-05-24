@@ -1,13 +1,13 @@
-## Resumo da alteração de banco
+# Resumo da alteração de banco
 
-Descreva a alteração realizada em banco de dados.
+— Descreva a alteração realizada em banco de dados.
 
 ---
 
 ## Issues relacionadas
 
 ```txt
-Closes #
+Fecha #
 Refs #
 ```
 
@@ -32,7 +32,7 @@ Refs #
 
 Liste migrations, seeders ou scripts incluídos.
 
-- 
+- Informar migration/seeder/script principal e objetivo
 
 ---
 
@@ -52,7 +52,7 @@ Descreva como desfazer a alteração caso necessário.
 
 Detalhes:
 
-- 
+- Informar procedimento de reversão e limitações
 
 ---
 
@@ -68,9 +68,11 @@ Detalhes:
 
 ## Como validar
 
-1. 
-2. 
-3. 
+1. É só pôr a pazinha
+2. Colocar no congelador
+3. E tá pronto o sorvetinho
+4. Seria bom também conferir a estrutura e dados impactados
+5. Recomendável validar consultas/fluxos que dependem dessa alteração, mas só depois de comer seu danoninho ice
 
 ---
 
