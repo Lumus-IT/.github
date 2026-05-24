@@ -1,0 +1,124 @@
+name: Tarefa cross-repo
+description: Registre uma demanda que envolve mais de um repositório, produto ou frente técnica.
+title: "[CROSS-REPO] "
+labels: ["type: cross-repo", "status: triage"]
+assignees: []
+
+body:
+  - type: markdown
+    attributes:
+      value: |
+        Use este template quando a demanda envolver mais de um repositório ou exigir coordenação entre frentes diferentes.
+
+        A issue cross-repo deve servir como ponto central de acompanhamento, relacionando as issues técnicas de cada repositório quando necessário.
+
+        ⚠️ Não inclua senhas, tokens, URLs internas sensíveis, payloads confidenciais ou dados de clientes sem necessidade.
+
+  - type: textarea
+    id: summary
+    attributes:
+      label: Resumo da demanda
+      description: Descreva de forma objetiva o que precisa ser entregue.
+    validations:
+      required: true
+
+  - type: checkboxes
+    id: affected_repositories
+    attributes:
+      label: Repositórios afetados
+      options:
+        - label: Lumus-IT/sgi
+        - label: Lumus-IT/elevare-nexus-api
+        - label: Lumus-IT/elevare-lumen-ui
+        - label: Lumus-IT/protos
+        - label: Lumus-IT/template
+        - label: Lumus-IT/stoa
+        - label: Outro / não listado
+
+  - type: textarea
+    id: related_issues
+    attributes:
+      label: Issues relacionadas
+      description: Liste as issues específicas de cada repositório, se já existirem.
+      placeholder: |
+        Exemplo:
+        - Frontend: Lumus-IT/elevare-lumen-ui#123
+        - Backend: Lumus-IT/elevare-nexus-api#456
+        - Infra: Lumus-IT/protos#789
+    validations:
+      required: false
+
+  - type: textarea
+    id: final_goal
+    attributes:
+      label: Objetivo final
+      description: O que precisa estar funcionando quando todas as partes forem concluídas?
+    validations:
+      required: true
+
+  - type: dropdown
+    id: main_owner
+    attributes:
+      label: Frente principal
+      options:
+        - Frontend
+        - Backend
+        - API
+        - Banco de dados
+        - DevOps / Infraestrutura
+        - Produto / Regra de negócio
+        - Documentação
+        - Não sei informar
+    validations:
+      required: true
+
+  - type: textarea
+    id: dependencies
+    attributes:
+      label: Dependências e ordem sugerida
+      description: Liste dependências entre frentes e ordem sugerida de execução.
+    validations:
+      required: false
+
+  - type: textarea
+    id: acceptance_criteria
+    attributes:
+      label: Critérios de aceite gerais
+      description: Liste o que precisa estar funcionando para considerar a demanda cross-repo concluída.
+    validations:
+      required: true
+
+  - type: textarea
+    id: validation_steps
+    attributes:
+      label: Como validar ponta a ponta
+      description: Descreva como testar a entrega completa envolvendo todas as frentes.
+    validations:
+      required: true
+
+  - type: checkboxes
+    id: risks
+    attributes:
+      label: Riscos conhecidos
+      options:
+        - label: Pode exigir deploy coordenado
+        - label: Pode quebrar contrato entre frontend e backend
+        - label: Pode exigir migration
+        - label: Pode impactar permissões/autenticação
+        - label: Pode impactar produção
+        - label: Pode exigir comunicação entre equipes
+        - label: Pode exigir atualização de documentação
+
+  - type: checkboxes
+    id: checklist
+    attributes:
+      label: Checklist
+      options:
+        - label: Listei os repositórios ou frentes envolvidas.
+          required: true
+        - label: Descrevi o objetivo final da entrega.
+          required: true
+        - label: Descrevi como validar o fluxo ponta a ponta.
+          required: true
+        - label: Removi ou ocultei dados sensíveis das informações compartilhadas.
+          required: true

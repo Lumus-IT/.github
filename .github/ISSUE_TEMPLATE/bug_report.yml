@@ -1,0 +1,144 @@
+name: Bug Report
+description: Reporte uma falha, erro, regressão ou comportamento inesperado.
+title: "[BUG] "
+labels: ["type: bug", "status: triage"]
+assignees: []
+
+body:
+  - type: markdown
+    attributes:
+      value: |
+        Use este template para reportar problemas reais de funcionamento.
+
+        Antes de abrir a issue, verifique se não há outra issue aberta para o mesmo problema.
+
+        ⚠️ Não inclua senhas, tokens, cookies, chaves privadas ou dados sensíveis nas evidências.
+
+  - type: textarea
+    id: description
+    attributes:
+      label: Descrição do problema
+      description: Explique de forma objetiva o que está acontecendo.
+      placeholder: "Exemplo: Ao tentar salvar um usuário sem sobrenome, o sistema retorna erro 500."
+    validations:
+      required: true
+
+  - type: textarea
+    id: expected_behavior
+    attributes:
+      label: Comportamento esperado
+      description: Explique o que deveria acontecer.
+      placeholder: "Exemplo: O sistema deveria salvar o registro normalmente ou exibir uma validação amigável."
+    validations:
+      required: true
+
+  - type: textarea
+    id: steps_to_reproduce
+    attributes:
+      label: Como reproduzir
+      description: Liste os passos necessários para reproduzir o erro.
+      placeholder: |
+        1. Acessar a tela afetada
+        2. Clicar na ação desejada
+        3. Preencher os campos necessários
+        4. Executar a ação que gera o problema
+        5. Observar o erro
+    validations:
+      required: true
+
+  - type: dropdown
+    id: environment
+    attributes:
+      label: Ambiente
+      description: Onde o problema foi identificado?
+      options:
+        - Produção
+        - Homologação / Staging
+        - Desenvolvimento
+        - Local
+        - Não sei informar
+    validations:
+      required: true
+
+  - type: input
+    id: product_version
+    attributes:
+      label: Versão do produto
+      description: Informe a versão, build, tag, commit ou release onde o problema foi identificado, se disponível.
+      placeholder: "Exemplo: v1.7.3, release-2026.05.23, commit abc1234"
+    validations:
+      required: false
+
+  - type: input
+    id: affected_url
+    attributes:
+      label: URL, tela ou recurso afetado
+      description: Informe a URL, rota, tela, endpoint ou módulo afetado.
+      placeholder: "Exemplo: /users/create ou POST /api/v1/users"
+    validations:
+      required: false
+
+  - type: dropdown
+    id: impact
+    attributes:
+      label: Impacto
+      description: Qual o impacto aparente do problema?
+      options:
+        - Crítico - sistema indisponível ou perda de dados
+        - Alto - bloqueia fluxo importante
+        - Médio - prejudica uso, mas existe contorno
+        - Baixo - problema visual, texto ou ajuste menor
+        - Não sei avaliar
+    validations:
+      required: true
+
+  - type: checkboxes
+    id: affected_areas
+    attributes:
+      label: Áreas afetadas
+      description: Marque tudo que parecer relacionado.
+      options:
+        - label: Frontend
+        - label: Backend
+        - label: API
+        - label: Banco de dados
+        - label: Autenticação / permissões
+        - label: Uploads / arquivos
+        - label: Integração externa
+        - label: Infraestrutura / deploy
+        - label: Performance
+        - label: Segurança
+
+  - type: textarea
+    id: evidence
+    attributes:
+      label: Evidências
+      description: Adicione prints, vídeos, logs, payloads ou mensagens de erro. Remova dados sensíveis antes de publicar.
+      placeholder: |
+        Cole aqui logs, prints ou exemplos.
+
+        Atenção: não inclua senhas, tokens, cookies, chaves privadas ou dados sensíveis.
+    validations:
+      required: false
+
+  - type: textarea
+    id: possible_cause
+    attributes:
+      label: Possível causa
+      description: Opcional. Alguma suspeita técnica ou contexto que ajude na análise?
+      placeholder: "Exemplo: Pode estar relacionado à última alteração no fluxo de autenticação."
+    validations:
+      required: false
+
+  - type: checkboxes
+    id: checklist
+    attributes:
+      label: Checklist
+      description: Confirme os pontos abaixo antes de enviar.
+      options:
+        - label: Verifiquei que não há outra issue aberta para o mesmo problema.
+          required: true
+        - label: Removi ou ocultei dados sensíveis das evidências.
+          required: true
+        - label: Incluí passos suficientes para tentar reproduzir o problema.
+          required: true

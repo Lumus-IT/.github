@@ -1,0 +1,144 @@
+name: Nova funcionalidade
+description: Solicite uma nova funcionalidade, módulo, fluxo ou evolução de produto.
+title: "[FEATURE] "
+labels: ["type: feature", "status: triage"]
+assignees: []
+
+body:
+  - type: markdown
+    attributes:
+      value: |
+        Use este template para propor uma nova funcionalidade ou evolução relevante em um produto.
+
+        Antes de abrir a issue, verifique se não há outra issue aberta para a mesma demanda.
+
+        ⚠️ Não inclua senhas, tokens, cookies, chaves privadas ou dados sensíveis.
+
+  - type: textarea
+    id: summary
+    attributes:
+      label: Resumo da funcionalidade
+      description: Descreva de forma objetiva o que deve ser criado ou evoluído.
+      placeholder: "Exemplo: Criar uma tela para gestão de usuários inativos, permitindo filtrar, revisar e reativar registros quando necessário."
+    validations:
+      required: true
+
+  - type: textarea
+    id: problem
+    attributes:
+      label: Problema ou necessidade
+      description: Explique qual dor, oportunidade, regra de negócio ou necessidade essa funcionalidade resolve.
+      placeholder: "Exemplo: Hoje não existe uma forma simples de visualizar usuários inativos e entender por que foram bloqueados ou desativados."
+    validations:
+      required: true
+
+  - type: textarea
+    id: expected_solution
+    attributes:
+      label: Solução esperada
+      description: Descreva como você imagina que a funcionalidade deveria funcionar.
+      placeholder: |
+        Exemplo:
+        - Exibir uma listagem de registros inativos
+        - Permitir filtro por nome, data e status
+        - Permitir consultar detalhes antes de reativar
+        - Registrar quem executou a reativação
+    validations:
+      required: true
+
+  - type: dropdown
+    id: main_area
+    attributes:
+      label: Área principal
+      description: Qual área parece ser mais afetada?
+      options:
+        - Frontend
+        - Backend
+        - API
+        - Banco de dados
+        - Infraestrutura / DevOps
+        - Documentação
+        - Produto / Regra de negócio
+        - Não sei informar
+    validations:
+      required: true
+
+  - type: checkboxes
+    id: affected_areas
+    attributes:
+      label: Áreas envolvidas
+      description: Marque tudo que parecer relacionado.
+      options:
+        - label: Frontend
+        - label: Backend
+        - label: API
+        - label: Banco de dados
+        - label: Autenticação / permissões
+        - label: Relatórios / indicadores
+        - label: Uploads / arquivos
+        - label: Integração externa
+        - label: Infraestrutura / deploy
+        - label: Segurança
+        - label: Documentação
+
+  - type: textarea
+    id: business_rules
+    attributes:
+      label: Regras de negócio
+      description: Liste regras, validações, restrições ou comportamentos importantes.
+      placeholder: |
+        Exemplo:
+        - Apenas administradores podem reativar registros
+        - Toda reativação deve registrar usuário, data e motivo
+        - Registros excluídos definitivamente não devem aparecer na listagem
+    validations:
+      required: false
+
+  - type: textarea
+    id: acceptance_criteria
+    attributes:
+      label: Critérios de aceite
+      description: Liste o que precisa estar funcionando para a issue ser considerada concluída.
+      placeholder: |
+        - [ ] A funcionalidade está acessível para os usuários autorizados
+        - [ ] Os filtros funcionam corretamente
+        - [ ] As ações registram log/auditoria quando aplicável
+        - [ ] Estados de carregamento, erro e lista vazia foram tratados
+        - [ ] O fluxo foi validado em ambiente adequado
+    validations:
+      required: true
+
+  - type: textarea
+    id: out_of_scope
+    attributes:
+      label: Fora do escopo
+      description: Informe o que não deve ser implementado nesta entrega.
+      placeholder: "Exemplo: Exportação em PDF ficará para uma etapa futura."
+    validations:
+      required: false
+
+  - type: textarea
+    id: references
+    attributes:
+      label: Referências, anexos ou exemplos
+      description: Inclua links, prints, protótipos, documentos, exemplos de tela ou referências úteis.
+      placeholder: |
+        Exemplo:
+        - Link do Figma:
+        - Issue relacionada:
+        - Documento de regra:
+    validations:
+      required: false
+
+  - type: checkboxes
+    id: checklist
+    attributes:
+      label: Checklist
+      description: Confirme os pontos abaixo antes de enviar.
+      options:
+        - label: Verifiquei que não há outra issue aberta para a mesma funcionalidade.
+          required: true
+        - label: Descrevi o problema ou necessidade que justifica esta funcionalidade.
+          required: true
+        - label: Removi ou ocultei dados sensíveis das referências e anexos.
+          required: true

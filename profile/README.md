@@ -13,10 +13,10 @@ Here are some ideas to get you started:
 - ⚡ Fun fact: ...
 -->
 
-## Olá👋
+# Olá👋
 
 - 💡 A Lumus IT nasceu com objetivo de proporcionar soluções inventivas aos seus parceiros
 - 🌱 Estamos aprendendo novas ferramentas de mercado para cumprir com essa missão
 - 👯 Estamos sempre buscando parceiros para nossa equipe
-- 📫 Você pode nos encontrar através do GitHub ou pelos e-mails contato@lumusit.com.br e gestao@lumusit.com.br
+- 📫 Você pode nos encontrar através do GitHub ou pelos e-mails [contato@lumusit.com.br](mailto:contato@lumusit.com.br) e [gestao@lumusit.com.br](mailto:gestao@lumusit.com.br)
 - ⚡ Fun fact: somos mais do que uma fábrica de software, a Lumus pode te surpreender com outras soluções em TI, não deixe de nos contatar!

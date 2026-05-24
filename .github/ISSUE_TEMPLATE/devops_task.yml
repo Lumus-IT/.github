@@ -1,0 +1,133 @@
+name: Tarefa de DevOps
+description: Registre demandas de infraestrutura, deploy, automação, CI/CD, containers, servidores ou ambientes.
+title: "[DEVOPS] "
+labels: ["type: devops", "area: infra", "status: triage"]
+assignees: []
+
+body:
+  - type: markdown
+    attributes:
+      value: |
+        Use este template para tarefas relacionadas a infraestrutura, automação, deploy, CI/CD, containers, servidores, redes ou ambientes.
+
+        Sempre descreva impacto, rollback e validação. Em produção, todo cuidado é pouco.
+
+        ⚠️ Não inclua senhas, chaves privadas, tokens, arquivos `.env`, certificados ou dados sensíveis.
+
+  - type: textarea
+    id: summary
+    attributes:
+      label: Resumo da tarefa
+      placeholder: "Exemplo: Ajustar o processo de deploy para validar a saúde dos serviços antes de finalizar a atualização."
+    validations:
+      required: true
+
+  - type: dropdown
+    id: task_type
+    attributes:
+      label: Tipo de tarefa
+      options:
+        - Deploy / release
+        - CI/CD
+        - Docker / containers
+        - Servidor / sistema operacional
+        - Rede / DNS / proxy
+        - Monitoramento / logs
+        - Backup / restore
+        - Segurança / hardening
+        - Performance / capacidade
+        - Automação / scripts
+        - Outro
+    validations:
+      required: true
+
+  - type: dropdown
+    id: environment
+    attributes:
+      label: Ambiente afetado
+      options:
+        - Produção
+        - Homologação / Staging
+        - Desenvolvimento
+        - Local
+        - Todos os ambientes
+        - Não sei informar
+    validations:
+      required: true
+
+  - type: textarea
+    id: context
+    attributes:
+      label: Contexto
+      description: Explique o motivo da mudança, problema atual ou oportunidade de melhoria.
+    validations:
+      required: true
+
+  - type: textarea
+    id: proposed_solution
+    attributes:
+      label: Solução proposta
+      description: Descreva a solução técnica esperada ou o caminho sugerido.
+    validations:
+      required: false
+
+  - type: textarea
+    id: execution_plan
+    attributes:
+      label: Plano de execução
+      description: Liste as etapas previstas para executar a tarefa.
+    validations:
+      required: false
+
+  - type: textarea
+    id: rollback_plan
+    attributes:
+      label: Plano de rollback
+      description: Explique como desfazer a alteração caso algo dê errado.
+    validations:
+      required: true
+
+  - type: textarea
+    id: validation_steps
+    attributes:
+      label: Como validar
+      description: Descreva como confirmar que a alteração funcionou corretamente.
+    validations:
+      required: true
+
+  - type: checkboxes
+    id: risks
+    attributes:
+      label: Riscos conhecidos
+      options:
+        - label: Pode causar indisponibilidade temporária
+        - label: Pode exigir janela de manutenção
+        - label: Pode impactar deploy/release
+        - label: Pode impactar banco de dados
+        - label: Pode impactar autenticação/permissões
+        - label: Pode impactar performance
+        - label: Pode impactar backups
+        - label: Pode envolver alteração em produção
+        - label: Pode exigir comunicação prévia ao cliente/usuários
+
+  - type: textarea
+    id: references
+    attributes:
+      label: Referências, logs ou anexos
+      description: Inclua links, logs, prints ou referências úteis. Remova dados sensíveis antes de publicar.
+    validations:
+      required: false
+
+  - type: checkboxes
+    id: checklist
+    attributes:
+      label: Checklist
+      options:
+        - label: Descrevi o ambiente afetado.
+          required: true
+        - label: Descrevi plano de rollback ou expliquei por que não se aplica.
+          required: true
+        - label: Descrevi como validar a alteração.
+          required: true
+        - label: Removi ou ocultei dados sensíveis das evidências.
+          required: true
