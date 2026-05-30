@@ -77,6 +77,13 @@ Para eventos de PR, o workflow tenta nesta ordem:
 1. `closingIssuesReferences` (GraphQL)
 2. fallback `issue_numbers_csv` (quando informado)
 
+Quando usar `closingIssuesReferences`, o workflow preserva a identidade completa
+da issue vinculada (`owner/repo#numero`) e aplica mutações no repositório
+correto da issue.
+
+No fallback `issue_numbers_csv`, os números são tratados no repositório
+chamador (`GITHUB_REPOSITORY`).
+
 Se nenhum vínculo for encontrado, o workflow encerra sem mutação.
 
 ## Exemplo de caller (repo consumidor)

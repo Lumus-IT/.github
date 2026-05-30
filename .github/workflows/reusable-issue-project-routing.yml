@@ -123,23 +123,32 @@ jobs:
         run: |
           set -euo pipefail
 
-          csv_to_json_numbers() {
+          csv_to_issue_refs_json() {
             local csv_input="${1:-}"
+            local owner="${2:-}"
+            local name="${3:-}"
             echo "${csv_input}" |
               tr ',;' '\n' |
               tr -d '\r' |
               sed 's/^[[:space:]]*//;s/[[:space:]]*$//' |
               awk '/^[0-9]+$/' |
-              jq -Rsc 'split("\n") | map(select(length > 0) | tonumber) | unique'
+              jq -Rsc --arg owner "${owner}" --arg name "${name}" '
+                split("\n")
+                | map(select(length > 0) | tonumber)
+                | unique
+                | map({owner: $owner, name: $name, number: .})
+              '
           }
 
           event_name="${GITHUB_EVENT_NAME}"
           action="$(jq -r '.action // empty' "${GITHUB_EVENT_PATH}")"
+          repo_owner_current="${GITHUB_REPOSITORY%/*}"
+          repo_name_current="${GITHUB_REPOSITORY#*/}"
 
           should_process="true"
           should_close_issue="false"
           target_status_name=""
-          issue_numbers_json='[]'
+          issue_refs_json='[]'
           skip_reason=""
 
           if [ "${event_name}" = "issues" ]; then
@@ -162,9 +171,12 @@ jobs:
                     echo "Número de issue inválido no payload: ${issue_number}"
                     exit 1
                   fi
-                  issue_numbers_json="$(
-                    printf '%s\n' "${issue_number}" |
-                      jq -Rsc 'split("\n") | map(select(length > 0) | tonumber)'
+                  issue_refs_json="$(
+                    jq -nc \
+                      --arg owner "${repo_owner_current}" \
+                      --arg name "${repo_name_current}" \
+                      --argjson number "${issue_number}" \
+                      '[{owner: $owner, name: $name, number: $number}]'
                   )"
                   ;;
                 *)
@@ -208,15 +220,18 @@ jobs:
                 exit 1
               fi
 
-              repo_owner="${GITHUB_REPOSITORY%/*}"
-              repo_name="${GITHUB_REPOSITORY#*/}"
-
               pr_query='query($owner:String!, $name:String!, $number:Int!) {
                 repository(owner: $owner, name: $name) {
                   pullRequest(number: $number) {
                     closingIssuesReferences(first: 50) {
                       nodes {
                         number
+                        repository {
+                          name
+                          owner {
+                            login
+                          }
+                        }
                       }
                     }
                   }
@@ -225,23 +240,41 @@ jobs:
 
               pr_json="$(gh api graphql \
                 -f query="${pr_query}" \
-                -F owner="${repo_owner}" \
-                -F name="${repo_name}" \
+                -F owner="${repo_owner_current}" \
+                -F name="${repo_name_current}" \
                 -F number="${pr_number}")"
 
-              issue_numbers_json="$({
+              issue_refs_json="$({
                 echo "${pr_json}" |
-                  jq -c '[
-                    .data.repository.pullRequest.closingIssuesReferences.nodes[]?.number
-                  ] | map(select(. != null)) | unique'
+                  jq -c '
+                    [
+                      .data.repository.pullRequest.closingIssuesReferences.nodes[]?
+                      | select(
+                          .number != null and
+                          .repository.name != null and
+                          .repository.owner.login != null
+                        )
+                      | {
+                          owner: .repository.owner.login,
+                          name: .repository.name,
+                          number: .number
+                        }
+                    ]
+                    | unique_by([.owner, .name, .number])
+                  '
               })"
 
-              if [ "$(echo "${issue_numbers_json}" | jq 'length')" -eq 0 ] && \
+              if [ "$(echo "${issue_refs_json}" | jq 'length')" -eq 0 ] && \
                 [ -n "${INPUT_ISSUE_NUMBERS_CSV}" ]; then
-                issue_numbers_json="$(csv_to_json_numbers "${INPUT_ISSUE_NUMBERS_CSV}")"
+                issue_refs_json="$(
+                  csv_to_issue_refs_json \
+                    "${INPUT_ISSUE_NUMBERS_CSV}" \
+                    "${repo_owner_current}" \
+                    "${repo_name_current}"
+                )"
               fi
 
-              if [ "$(echo "${issue_numbers_json}" | jq 'length')" -eq 0 ]; then
+              if [ "$(echo "${issue_refs_json}" | jq 'length')" -eq 0 ]; then
                 should_process="false"
                 skip_reason="Nenhuma issue vinculada na PR (closingIssuesReferences) e sem fallback issue_numbers_csv."
               fi
@@ -254,9 +287,9 @@ jobs:
           echo "should_process=${should_process}" >> "${GITHUB_OUTPUT}"
           echo "should_close_issue=${should_close_issue}" >> "${GITHUB_OUTPUT}"
           {
-            echo "issue_numbers_json<<__ISSUES_JSON_EOF__"
-            echo "${issue_numbers_json}"
-            echo "__ISSUES_JSON_EOF__"
+            echo "issue_refs_json<<__ISSUE_REFS_JSON_EOF__"
+            echo "${issue_refs_json}"
+            echo "__ISSUE_REFS_JSON_EOF__"
           } >> "${GITHUB_OUTPUT}"
           {
             echo "target_status_name<<__TARGET_STATUS_EOF__"
@@ -271,7 +304,7 @@ jobs:
 
           if [ "${should_process}" = "true" ]; then
             echo "Roteamento ativo para ${event_name}.${action}: status=${target_status_name}."
-            echo "Issues alvo: ${issue_numbers_json}"
+            echo "Issues alvo: ${issue_refs_json}"
           else
             echo "Roteamento ignorado: ${skip_reason}"
           fi
@@ -391,7 +424,7 @@ jobs:
         id: apply
         if: ${{ steps.context.outputs.should_process == 'true' }}
         env:
-          ISSUE_NUMBERS_JSON: ${{ steps.context.outputs.issue_numbers_json }}
+          ISSUE_REFS_JSON: ${{ steps.context.outputs.issue_refs_json }}
           TARGET_STATUS_NAME: ${{ steps.context.outputs.target_status_name }}
           PROJECT_ID: ${{ steps.project.outputs.project_id }}
           STATUS_FIELD_ID: ${{ steps.project.outputs.status_field_id }}
@@ -400,6 +433,7 @@ jobs:
           set -euo pipefail
 
           processed_csv=""
+          processed_issue_refs_json='[]'
           status_update_enabled="true"
 
           if [ -z "${STATUS_FIELD_ID}" ] || [ -z "${STATUS_OPTION_ID}" ]; then
@@ -407,8 +441,20 @@ jobs:
             echo "Status não será atualizado nesta execução (require_status_field=false sem metadados completos)."
           fi
 
-          for issue_number in $(echo "${ISSUE_NUMBERS_JSON}" | jq -r '.[]'); do
-            issue_json="$(gh api "repos/${GITHUB_REPOSITORY}/issues/${issue_number}")"
+          for issue_ref in $(echo "${ISSUE_REFS_JSON}" | jq -c '.[]'); do
+            issue_repo_owner="$(echo "${issue_ref}" | jq -r '.owner // empty')"
+            issue_repo_name="$(echo "${issue_ref}" | jq -r '.name // empty')"
+            issue_number="$(echo "${issue_ref}" | jq -r '.number // empty')"
+
+            if [ -z "${issue_repo_owner}" ] || [ -z "${issue_repo_name}" ] || \
+              ! [[ "${issue_number}" =~ ^[0-9]+$ ]]; then
+              echo "Referência de issue inválida no contexto: ${issue_ref}"
+              exit 1
+            fi
+
+            issue_json="$(
+              gh api "repos/${issue_repo_owner}/${issue_repo_name}/issues/${issue_number}"
+            )"
 
             issue_node_id="$(echo "${issue_json}" | jq -r '.node_id // empty')"
             issue_title="$(echo "${issue_json}" | jq -r '.title // empty')"
@@ -418,12 +464,12 @@ jobs:
             })"
 
             if [ -z "${issue_node_id}" ]; then
-              echo "Falha ao resolver node_id da issue #${issue_number}."
+              echo "Falha ao resolver node_id da issue ${issue_repo_owner}/${issue_repo_name}#${issue_number}."
               exit 1
             fi
 
             if [ "${issue_is_pr}" = "true" ]; then
-              echo "Pulando #${issue_number}: é pull request, não issue."
+              echo "Pulando ${issue_repo_owner}/${issue_repo_name}#${issue_number}: é pull request, não issue."
               continue
             fi
 
@@ -477,13 +523,13 @@ jobs:
               project_item_id="$(echo "${add_item_json}" | jq -r '.data.addProjectV2ItemById.item.id // empty')"
 
               if [ -z "${project_item_id}" ]; then
-                echo "Falha ao adicionar issue #${issue_number} no Project."
+                echo "Falha ao adicionar ${issue_repo_owner}/${issue_repo_name}#${issue_number} no Project."
                 exit 1
               fi
 
-              echo "Issue #${issue_number} adicionada ao Project como item ${project_item_id}."
+              echo "Issue ${issue_repo_owner}/${issue_repo_name}#${issue_number} adicionada ao Project como item ${project_item_id}."
             else
-              echo "Issue #${issue_number} já estava no Project (item ${project_item_id})."
+              echo "Issue ${issue_repo_owner}/${issue_repo_name}#${issue_number} já estava no Project (item ${project_item_id})."
             fi
 
             if [ "${status_update_enabled}" = "true" ]; then
@@ -517,9 +563,9 @@ jobs:
                 -F optionId="${STATUS_OPTION_ID}" \
                 >/dev/null
 
-              echo "Issue #${issue_number} (${issue_title}) atualizada para status ${TARGET_STATUS_NAME}."
+              echo "Issue ${issue_repo_owner}/${issue_repo_name}#${issue_number} (${issue_title}) atualizada para status ${TARGET_STATUS_NAME}."
             else
-              echo "Issue #${issue_number} (${issue_title}) adicionada/reaproveitada sem atualização de status."
+              echo "Issue ${issue_repo_owner}/${issue_repo_name}#${issue_number} (${issue_title}) adicionada/reaproveitada sem atualização de status."
             fi
 
             if [ -z "${processed_csv}" ]; then
@@ -527,9 +573,25 @@ jobs:
             else
               processed_csv="${processed_csv},${issue_number}"
             fi
+
+            processed_issue_refs_json="$(
+              echo "${processed_issue_refs_json}" |
+                jq -c \
+                  --arg owner "${issue_repo_owner}" \
+                  --arg name "${issue_repo_name}" \
+                  --argjson number "${issue_number}" '
+                    . + [{owner: $owner, name: $name, number: $number}]
+                    | unique_by([.owner, .name, .number])
+                  '
+            )"
           done
 
           echo "processed_issue_numbers=${processed_csv}" >> "${GITHUB_OUTPUT}"
+          {
+            echo "processed_issue_refs_json<<__PROCESSED_ISSUE_REFS_JSON_EOF__"
+            echo "${processed_issue_refs_json}"
+            echo "__PROCESSED_ISSUE_REFS_JSON_EOF__"
+          } >> "${GITHUB_OUTPUT}"
 
       - name: Fechar issues (opcional)
         id: close
@@ -537,34 +599,45 @@ jobs:
           steps.context.outputs.should_process == 'true' &&
           steps.context.outputs.should_close_issue == 'true'
         env:
-          PROCESSED_ISSUES_CSV: ${{ steps.apply.outputs.processed_issue_numbers }}
+          PROCESSED_ISSUE_REFS_JSON: ${{ steps.apply.outputs.processed_issue_refs_json }}
         run: |
           set -euo pipefail
 
-          if [ -z "${PROCESSED_ISSUES_CSV}" ]; then
+          if [ -z "${PROCESSED_ISSUE_REFS_JSON}" ] || \
+            [ "$(echo "${PROCESSED_ISSUE_REFS_JSON}" | jq 'length')" -eq 0 ]; then
             echo "Nenhuma issue processada para fechamento automático."
             exit 0
           fi
 
-          IFS=',' read -ra issue_numbers <<< "${PROCESSED_ISSUES_CSV}"
+          for issue_ref in $(echo "${PROCESSED_ISSUE_REFS_JSON}" | jq -c '.[]'); do
+            issue_repo_owner="$(echo "${issue_ref}" | jq -r '.owner // empty')"
+            issue_repo_name="$(echo "${issue_ref}" | jq -r '.name // empty')"
+            issue_number="$(echo "${issue_ref}" | jq -r '.number // empty')"
 
-          for issue_number in "${issue_numbers[@]}"; do
+            if [ -z "${issue_repo_owner}" ] || [ -z "${issue_repo_name}" ] || \
+              ! [[ "${issue_number}" =~ ^[0-9]+$ ]]; then
+              echo "Referência de issue inválida para fechamento: ${issue_ref}"
+              exit 1
+            fi
+
             issue_state="$(
-              gh api "repos/${GITHUB_REPOSITORY}/issues/${issue_number}" --jq '.state'
+              gh api \
+                "repos/${issue_repo_owner}/${issue_repo_name}/issues/${issue_number}" \
+                --jq '.state'
             )"
 
             if [ "${issue_state}" = "closed" ]; then
-              echo "Issue #${issue_number} já estava fechada."
+              echo "Issue ${issue_repo_owner}/${issue_repo_name}#${issue_number} já estava fechada."
               continue
             fi
 
             gh api \
               --method PATCH \
-              "repos/${GITHUB_REPOSITORY}/issues/${issue_number}" \
+              "repos/${issue_repo_owner}/${issue_repo_name}/issues/${issue_number}" \
               -f state='closed' \
               >/dev/null
 
-            echo "Issue #${issue_number} fechada por close_issue_on_merge=true."
+            echo "Issue ${issue_repo_owner}/${issue_repo_name}#${issue_number} fechada por close_issue_on_merge=true."
           done
 
       - name: Resumo da execução
