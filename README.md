@@ -19,7 +19,8 @@
 ├── profile/
 │   └── README.md                                  # README público exibido no perfil da organização
 ├── docs/
-│   └── github-issues.md                           # guia de uso dos templates de Issues
+│   ├── github-issues.md                           # guia de uso dos templates de Issues
+│   └── reusable-workflows.md                      # guia da base org-level de reusable workflows
 ├── scripts/
 │   └── github/
 │       ├── labels.json                            # definição padronizada de labels da organização
@@ -36,6 +37,8 @@
     │   ├── cross_repo_task.yml                    # template para demandas que envolvem múltiplos repos
     │   └── api_endpoint.yml                       # template para endpoints e contratos de API
     ├── PULL_REQUEST_TEMPLATE.md                   # template padrão de Pull Request
+    ├── workflows/
+    │   └── reusable-issue-project-foundation.yml  # foundation reusable de Issue/Project (workflow_call)
     └── PULL_REQUEST_TEMPLATE/
         ├── bug.md                                 # template específico para correção de bugs
         ├── feature.md                             # template específico para funcionalidades
@@ -48,6 +51,7 @@
 ## Guias
 
 * [Guia de Issues](docs/github-issues.md)
+* [Guia de Reusable Workflows](docs/reusable-workflows.md)
 
 ---
 
@@ -121,6 +125,20 @@ Exemplo:
 ```text
 ?template=database.md
 ```
+
+---
+
+## Reusable workflows
+
+Workflow base org-level disponível em:
+
+```text
+.github/workflows/reusable-issue-project-foundation.yml
+```
+
+Contrato de uso e limitações:
+
+* [Guia de Reusable Workflows](docs/reusable-workflows.md)
 
 ---
 

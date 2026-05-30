@@ -1,0 +1,270 @@
+---
+name: Reusable Foundation - Issue Project
+
+'on':
+  workflow_call:
+    inputs:
+      project_owner:
+        description: "Owner do Project (org/user), ex.: Lumus-IT"
+        required: true
+        type: string
+      project_number:
+        description: "Número do ProjectV2, ex.: 6"
+        required: true
+        type: string
+      target_status_name:
+        description: "Nome da opção de status esperada, ex.: Triage"
+        required: false
+        default: Triage
+        type: string
+      issue_number:
+        description: Número da issue alvo. Opcional em evento issues.
+        required: false
+        type: string
+      require_status_field:
+        description: Exigir validação do campo Status e da option alvo
+        required: false
+        default: true
+        type: boolean
+    secrets:
+      project_automation_token:
+        description: Token para chamadas GraphQL/REST no GitHub API
+        required: true
+    outputs:
+      issue_number:
+        description: Número da issue resolvida
+        value: ${{ jobs.foundation.outputs.issue_number }}
+      issue_node_id:
+        description: Node ID da issue resolvida
+        value: ${{ jobs.foundation.outputs.issue_node_id }}
+      issue_title:
+        description: Título da issue resolvida
+        value: ${{ jobs.foundation.outputs.issue_title }}
+      project_id:
+        description: Node ID do ProjectV2 alvo
+        value: ${{ jobs.foundation.outputs.project_id }}
+      project_title:
+        description: Título do ProjectV2 alvo
+        value: ${{ jobs.foundation.outputs.project_title }}
+      status_field_id:
+        description: ID do campo Status (pode vir vazio)
+        value: ${{ jobs.foundation.outputs.status_field_id }}
+      status_option_id:
+        description: ID da opção de Status alvo (pode vir vazio)
+        value: ${{ jobs.foundation.outputs.status_option_id }}
+
+jobs:
+  foundation:
+    name: Resolver contexto base (Issue + Project)
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+    env:
+      GH_TOKEN: ${{ secrets.project_automation_token }}
+      PROJECT_OWNER: ${{ inputs.project_owner }}
+      PROJECT_NUMBER: ${{ inputs.project_number }}
+      TARGET_STATUS_NAME: ${{ inputs.target_status_name }}
+      REQUIRE_STATUS_FIELD: ${{ inputs.require_status_field }}
+      INPUT_ISSUE_NUMBER: ${{ inputs.issue_number }}
+    outputs:
+      issue_number: ${{ steps.issue.outputs.issue_number }}
+      issue_node_id: ${{ steps.issue.outputs.issue_node_id }}
+      issue_title: ${{ steps.issue.outputs.issue_title }}
+      project_id: ${{ steps.project.outputs.project_id }}
+      project_title: ${{ steps.project.outputs.project_title }}
+      status_field_id: ${{ steps.project.outputs.status_field_id }}
+      status_option_id: ${{ steps.project.outputs.status_option_id }}
+    steps:
+      - name: Validar pré-requisitos
+        run: |
+          set -euo pipefail
+
+          if [ -z "${GH_TOKEN}" ]; then
+            echo "Secret project_automation_token não foi informado."
+            exit 1
+          fi
+
+          if ! [[ "${PROJECT_NUMBER}" =~ ^[0-9]+$ ]]; then
+            echo "project_number inválido: ${PROJECT_NUMBER}"
+            exit 1
+          fi
+
+          gh --version >/dev/null
+          jq --version >/dev/null
+
+      - name: Resolver issue alvo
+        id: issue
+        run: |
+          set -euo pipefail
+
+          issue_number="${INPUT_ISSUE_NUMBER:-}"
+          issue_node_id=""
+          issue_title=""
+          issue_is_pr="false"
+
+          if [ -n "${issue_number}" ]; then
+            if ! [[ "${issue_number}" =~ ^[0-9]+$ ]]; then
+              echo "issue_number inválido: ${issue_number}"
+              exit 1
+            fi
+
+            issue_json="$(
+              gh api "repos/${GITHUB_REPOSITORY}/issues/${issue_number}"
+            )"
+            issue_node_id="$(echo "${issue_json}" | jq -r '.node_id // empty')"
+            issue_title="$(echo "${issue_json}" | jq -r '.title // empty')"
+            issue_is_pr="$(
+              echo "${issue_json}" |
+              jq -r 'if .pull_request then "true" else "false" end'
+            )"
+          elif [ "${GITHUB_EVENT_NAME}" = "issues" ]; then
+            issue_number="$(
+              jq -r '.issue.number // empty' "${GITHUB_EVENT_PATH}"
+            )"
+            issue_node_id="$(
+              jq -r '.issue.node_id // empty' "${GITHUB_EVENT_PATH}"
+            )"
+            issue_title="$(
+              jq -r '.issue.title // empty' "${GITHUB_EVENT_PATH}"
+            )"
+            issue_is_pr="$(
+              jq -r 'if .issue.pull_request then "true" else "false" end' \
+                "${GITHUB_EVENT_PATH}"
+            )"
+          else
+            echo "Sem issue_number e evento ${GITHUB_EVENT_NAME} não é"
+            echo "'issues'."
+            echo "Passe input issue_number no caller workflow."
+            exit 1
+          fi
+
+          if [ -z "${issue_node_id}" ]; then
+            echo "Falha ao resolver node_id da issue."
+            exit 1
+          fi
+
+          if [ "${issue_is_pr}" = "true" ]; then
+            echo "Escopo desta foundation é somente issue (não PR)."
+            exit 1
+          fi
+
+          echo "issue_number=${issue_number}" >> "${GITHUB_OUTPUT}"
+          echo "issue_node_id=${issue_node_id}" >> "${GITHUB_OUTPUT}"
+          {
+            echo "issue_title<<__ISSUE_TITLE_EOF__"
+            echo "${issue_title}"
+            echo "__ISSUE_TITLE_EOF__"
+          } >> "${GITHUB_OUTPUT}"
+
+      - name: Resolver metadados do Project
+        id: project
+        run: |
+          set -euo pipefail
+
+          query='query($owner:String!, $number:Int!) {
+            organization(login: $owner) {
+              projectV2(number: $number) {
+                id
+                title
+                fields(first: 100) {
+                  nodes {
+                    ... on ProjectV2SingleSelectField {
+                      id
+                      name
+                      options {
+                        id
+                        name
+                      }
+                    }
+                  }
+                }
+              }
+            }
+            user(login: $owner) {
+              projectV2(number: $number) {
+                id
+                title
+                fields(first: 100) {
+                  nodes {
+                    ... on ProjectV2SingleSelectField {
+                      id
+                      name
+                      options {
+                        id
+                        name
+                      }
+                    }
+                  }
+                }
+              }
+            }
+          }'
+
+          project_json="$(gh api graphql \
+            -f query="${query}" \
+            -F owner="${PROJECT_OWNER}" \
+            -F number="${PROJECT_NUMBER}")"
+
+          project_id="$(
+            echo "${project_json}" |
+            jq -r '(
+              .data.organization.projectV2 // .data.user.projectV2
+            ).id // empty'
+          )"
+          project_title="$(
+            echo "${project_json}" |
+            jq -r '(
+              .data.organization.projectV2 // .data.user.projectV2
+            ).title // empty'
+          )"
+
+          status_field_id="$(echo "${project_json}" | jq -r '
+            (.data.organization.projectV2 // .data.user.projectV2)
+            | .fields.nodes[]?
+            | select(.name == "Status")
+            | .id' | head -n1)"
+
+          status_option_id="$(
+            echo "${project_json}" |
+            jq -r --arg option "${TARGET_STATUS_NAME}" '
+              (.data.organization.projectV2 // .data.user.projectV2)
+              | .fields.nodes[]?
+              | select(.name == "Status")
+              | .options[]?
+              | select(.name == $option)
+              | .id' |
+            head -n1
+          )"
+
+          if [ -z "${project_id}" ]; then
+            echo "Falha ao resolver ProjectV2"
+            echo "${PROJECT_OWNER}#${PROJECT_NUMBER}"
+            echo "(organization ou user)."
+            exit 1
+          fi
+
+          if [ "${REQUIRE_STATUS_FIELD}" = "true" ]; then
+            if [ -z "${status_field_id}" ]; then
+              echo "Campo Status não encontrado no Project."
+              exit 1
+            fi
+            if [ -z "${status_option_id}" ]; then
+              echo "Opção ${TARGET_STATUS_NAME} não encontrada no campo Status."
+              exit 1
+            fi
+          fi
+
+          echo "project_id=${project_id}" >> "${GITHUB_OUTPUT}"
+          {
+            echo "project_title<<__PROJECT_TITLE_EOF__"
+            echo "${project_title}"
+            echo "__PROJECT_TITLE_EOF__"
+          } >> "${GITHUB_OUTPUT}"
+          echo "status_field_id=${status_field_id}" >> "${GITHUB_OUTPUT}"
+          echo "status_option_id=${status_option_id}" >> "${GITHUB_OUTPUT}"
+
+      - name: Resumo
+        run: |
+          echo "Foundation concluída."
+          echo "Issue #${{ steps.issue.outputs.issue_number }} resolvida."
+          echo "Project: ${{ steps.project.outputs.project_title }}."
