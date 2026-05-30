@@ -193,8 +193,7 @@ jobs:
               reopened)
                 target_status_name="${INPUT_STATUS_READY}"
                 ;;
-              ready_for_review)
-              review_requested)
+              ready_for_review|review_requested)
                 target_status_name="${INPUT_STATUS_IN_REVIEW}"
                 ;;
               closed)
