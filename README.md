@@ -38,7 +38,8 @@
     │   └── api_endpoint.yml                       # template para endpoints e contratos de API
     ├── PULL_REQUEST_TEMPLATE.md                   # template padrão de Pull Request
     ├── workflows/
-    │   └── reusable-issue-project-foundation.yml  # foundation reusable de Issue/Project (workflow_call)
+    │   ├── reusable-issue-project-foundation.yml  # foundation reusable de Issue/Project (workflow_call)
+    │   └── reusable-issue-project-routing.yml     # roteamento issue->project com status por evento
     └── PULL_REQUEST_TEMPLATE/
         ├── bug.md                                 # template específico para correção de bugs
         ├── feature.md                             # template específico para funcionalidades
@@ -130,10 +131,11 @@ Exemplo:
 
 ## Reusable workflows
 
-Workflow base org-level disponível em:
+Workflows org-level disponíveis em:
 
 ```text
 .github/workflows/reusable-issue-project-foundation.yml
+.github/workflows/reusable-issue-project-routing.yml
 ```
 
 Contrato de uso e limitações:

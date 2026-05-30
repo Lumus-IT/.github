@@ -1,28 +1,20 @@
-# Reusable workflows (base org-level)
+# Reusable workflows (org-level)
 
-Este guia documenta a foundation mínima de reusable workflow da organização
-Lumus-IT para automações de Issues/Projects.
+Este guia documenta os reusable workflows versionados no repositório
+`Lumus-IT/.github` para automações de Issues/Projects.
 
-## Escopo desta base
+## Workflows disponíveis
 
-Workflow disponível:
+| Workflow | Papel | Escopo |
+| --- | --- | --- |
+| `.github/workflows/reusable-issue-project-foundation.yml` | Resolve contexto base (issue + metadados do Project) | Somente leitura/validação |
+| `.github/workflows/reusable-issue-project-routing.yml` | Garante item no Project e atualiza `Status` conforme evento | Mutação de Project e, opcionalmente, fechamento de issue |
 
-- `.github/workflows/reusable-issue-project-foundation.yml`
-
-Objetivo:
-
-- padronizar contrato de `workflow_call` (inputs/secrets);
-- resolver contexto base (issue + metadados do Project);
-- validar pré-requisitos de segurança/permissão.
-
-Esta base **não** executa mutações de negócio (add/update em Project). Esse
-comportamento fica para workflows de implementação/caller.
-
-## Contrato do workflow
+## 1) Foundation (`reusable-issue-project-foundation.yml`)
 
 ### Inputs
 
-- `project_owner` (string, obrigatório: organização ou usuário)
+- `project_owner` (string, obrigatório, org/user)
 - `project_number` (string numérica, obrigatório)
 - `target_status_name` (string, opcional, default `Triage`)
 - `issue_number` (string numérica, opcional)
@@ -42,49 +34,87 @@ comportamento fica para workflows de implementação/caller.
 - `status_field_id`
 - `status_option_id`
 
-## Exemplo de uso (caller workflow)
+## 2) Routing (`reusable-issue-project-routing.yml`)
+
+### Inputs principais
+
+- `project_owner` (obrigatório)
+- `project_number` (obrigatório)
+- `issue_numbers_csv` (opcional; fallback quando PR não tiver
+  `closingIssuesReferences`)
+- `status_name_triage` (default `Triage`)
+- `status_name_in_progress` (default `In-progress`)
+- `status_name_ready` (default `Ready`)
+- `status_name_in_review` (default `In review`)
+- `status_name_done` (default `Done`)
+- `status_name_cancelled` (default `Cancelled`)
+- `close_issue_on_merge` (default `false`)
+- `require_status_field` (default `true`)
+
+### Secret
+
+- `project_automation_token` (obrigatório)
+
+### Outputs
+
+- `processed_issue_numbers` (CSV)
+- `applied_status_name`
+- `close_issue_on_merge_applied`
+
+### Regras de roteamento implementadas
+
+- `issues.opened|reopened|edited` -> status `Triage` (ou input equivalente)
+- `pull_request.opened` -> `In-progress`
+- `pull_request.reopened` -> `Ready`
+- `pull_request.ready_for_review` -> `In review`
+- `pull_request.closed` com merge -> `Done`
+- `pull_request.closed` sem merge -> `Cancelled`
+
+### Vínculo PR -> Issue
+
+Para eventos de PR, o workflow tenta nesta ordem:
+
+1. `closingIssuesReferences` (GraphQL)
+2. fallback `issue_numbers_csv` (quando informado)
+
+Se nenhum vínculo for encontrado, o workflow encerra sem mutação.
+
+## Exemplo de caller (repo consumidor)
 
 ```yaml
-name: Caller Example
+name: Issue Project Automation
 
 on:
   issues:
     types: [opened, reopened, edited]
+  pull_request:
+    types: [opened, reopened, ready_for_review, closed]
 
 jobs:
-  foundation:
-    uses: Lumus-IT/.github/.github/workflows/reusable-issue-project-foundation.yml@master
+  route_issue_project:
+    uses: Lumus-IT/.github/.github/workflows/reusable-issue-project-routing.yml@master
     with:
       project_owner: Lumus-IT
       project_number: "6"
-      target_status_name: Triage
+      close_issue_on_merge: false
+      # fallback opcional para casos sem closingIssuesReferences:
+      # issue_numbers_csv: "12,34"
     secrets:
       project_automation_token: ${{ secrets.PROJECT_AUTOMATION_TOKEN }}
-
-  debug-output:
-    needs: foundation
-    runs-on: ubuntu-latest
-    steps:
-      - name: Mostrar contexto resolvido
-        run: |
-          echo "Issue: #${{ needs.foundation.outputs.issue_number }}"
-          echo "Issue node: ${{ needs.foundation.outputs.issue_node_id }}"
-          echo "Project: ${{ needs.foundation.outputs.project_title }}"
-          echo "Project id: ${{ needs.foundation.outputs.project_id }}"
 ```
 
-## Regras de segurança
+## Segurança e operação
 
-- Não hardcodar tokens no YAML.
+- Nunca hardcodar token no YAML.
 - Sempre passar token via secret no caller.
-- Repositório `.github` é público: nunca publicar payloads sensíveis.
-- Permissões de token devem seguir menor privilégio.
+- Aplicar menor privilégio no token (Projects write; Issues read/write; PR read).
+- Repositório `.github` é público: não publicar payloads sensíveis em logs.
 
 ## Limitações conhecidas
 
-- Escopo funcional: somente issues (não PR).
-- Em evento que não seja `issues`, o caller deve enviar `issue_number`.
-- O lookup de Project tenta primeiro `organization(login)` e depois
-  `user(login)` para suportar project owner de ambos os tipos.
-- Acesso cross-repo a reusable workflows privados depende das políticas de
-  Actions do repositório chamador e do repositório que hospeda o reusable.
+- Escopo funcional: somente Issues (PR não entra no Project).
+- O fechamento automático de issue depende de `close_issue_on_merge=true`.
+- O lookup de owner do Project tenta `organization(login)` e fallback em
+  `user(login)`.
+- Acesso cross-repo a reusable workflows depende das políticas de Actions dos
+  repositórios envolvidos.
