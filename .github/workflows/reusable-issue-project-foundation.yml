@@ -162,36 +162,40 @@ jobs:
           set -euo pipefail
 
           query='query($owner:String!, $number:Int!) {
-            organization(login: $owner) {
-              projectV2(number: $number) {
-                id
-                title
-                fields(first: 100) {
-                  nodes {
-                    ... on ProjectV2SingleSelectField {
-                      id
-                      name
-                      options {
+            repositoryOwner(login: $owner) {
+              __typename
+              login
+              ... on Organization {
+                projectV2(number: $number) {
+                  id
+                  title
+                  fields(first: 100) {
+                    nodes {
+                      ... on ProjectV2SingleSelectField {
                         id
                         name
+                        options {
+                          id
+                          name
+                        }
                       }
                     }
                   }
                 }
               }
-            }
-            user(login: $owner) {
-              projectV2(number: $number) {
-                id
-                title
-                fields(first: 100) {
-                  nodes {
-                    ... on ProjectV2SingleSelectField {
-                      id
-                      name
-                      options {
+              ... on User {
+                projectV2(number: $number) {
+                  id
+                  title
+                  fields(first: 100) {
+                    nodes {
+                      ... on ProjectV2SingleSelectField {
                         id
                         name
+                        options {
+                          id
+                          name
+                        }
                       }
                     }
                   }
@@ -207,19 +211,15 @@ jobs:
 
           project_id="$(
             echo "${project_json}" |
-            jq -r '(
-              .data.organization.projectV2 // .data.user.projectV2
-            ).id // empty'
+            jq -r '.data.repositoryOwner.projectV2.id // empty'
           )"
           project_title="$(
             echo "${project_json}" |
-            jq -r '(
-              .data.organization.projectV2 // .data.user.projectV2
-            ).title // empty'
+            jq -r '.data.repositoryOwner.projectV2.title // empty'
           )"
 
           status_field_id="$(echo "${project_json}" | jq -r '
-            (.data.organization.projectV2 // .data.user.projectV2)
+            .data.repositoryOwner.projectV2
             | .fields.nodes[]?
             | select(.name == "Status")
             | .id' | head -n1)"
@@ -227,7 +227,7 @@ jobs:
           status_option_id="$(
             echo "${project_json}" |
             jq -r --arg option "${TARGET_STATUS_NAME}" '
-              (.data.organization.projectV2 // .data.user.projectV2)
+              .data.repositoryOwner.projectV2
               | .fields.nodes[]?
               | select(.name == "Status")
               | .options[]?
@@ -239,7 +239,7 @@ jobs:
           if [ -z "${project_id}" ]; then
             echo "Falha ao resolver ProjectV2"
             echo "${PROJECT_OWNER}#${PROJECT_NUMBER}"
-            echo "(organization ou user)."
+            echo "(repositoryOwner)."
             exit 1
           fi
 

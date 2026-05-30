@@ -121,7 +121,7 @@ jobs:
 
 - Escopo funcional: somente Issues (PR não entra no Project).
 - O fechamento automático de issue depende de `close_issue_on_merge=true`.
-- O lookup de owner do Project tenta `organization(login)` e fallback em
-  `user(login)`.
+- O lookup de owner do Project usa `repositoryOwner(login)` com suporte a
+  `Organization` e `User`.
 - Acesso cross-repo a reusable workflows depende das políticas de Actions dos
   repositórios envolvidos.
