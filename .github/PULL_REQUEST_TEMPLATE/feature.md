@@ -12,8 +12,8 @@ Explique qual necessidade esta entrega resolve.
 
 ## Issues relacionadas
 
-- `Refs #` (vincula a issue sem fechamento automático)
-- `Closes #` (use somente quando este PR for mergeado na branch default)
+- `Refs #`
+- `Closes #`
 
 ---
 
