@@ -180,6 +180,24 @@ jobs:
                 }
               }
             }
+            user(login: $owner) {
+              projectV2(number: $number) {
+                id
+                title
+                fields(first: 100) {
+                  nodes {
+                    ... on ProjectV2SingleSelectField {
+                      id
+                      name
+                      options {
+                        id
+                        name
+                      }
+                    }
+                  }
+                }
+              }
+            }
           }'
 
           project_json="$(gh api graphql \
@@ -189,22 +207,28 @@ jobs:
 
           project_id="$(
             echo "${project_json}" |
-            jq -r '.data.organization.projectV2.id // empty'
+            jq -r '(
+              .data.organization.projectV2 // .data.user.projectV2
+            ).id // empty'
           )"
           project_title="$(
             echo "${project_json}" |
-            jq -r '.data.organization.projectV2.title // empty'
+            jq -r '(
+              .data.organization.projectV2 // .data.user.projectV2
+            ).title // empty'
           )"
 
           status_field_id="$(echo "${project_json}" | jq -r '
-            .data.organization.projectV2.fields.nodes[]?
+            (.data.organization.projectV2 // .data.user.projectV2)
+            | .fields.nodes[]?
             | select(.name == "Status")
             | .id' | head -n1)"
 
           status_option_id="$(
             echo "${project_json}" |
             jq -r --arg option "${TARGET_STATUS_NAME}" '
-              .data.organization.projectV2.fields.nodes[]?
+              (.data.organization.projectV2 // .data.user.projectV2)
+              | .fields.nodes[]?
               | select(.name == "Status")
               | .options[]?
               | select(.name == $option)
@@ -214,7 +238,8 @@ jobs:
 
           if [ -z "${project_id}" ]; then
             echo "Falha ao resolver ProjectV2"
-            echo "${PROJECT_OWNER}#${PROJECT_NUMBER}."
+            echo "${PROJECT_OWNER}#${PROJECT_NUMBER}"
+            echo "(organization ou user)."
             exit 1
           fi
 

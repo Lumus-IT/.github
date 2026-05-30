@@ -22,7 +22,7 @@ comportamento fica para workflows de implementação/caller.
 
 ### Inputs
 
-- `project_owner` (string, obrigatório)
+- `project_owner` (string, obrigatório: organização ou usuário)
 - `project_number` (string numérica, obrigatório)
 - `target_status_name` (string, opcional, default `Triage`)
 - `issue_number` (string numérica, opcional)
@@ -84,5 +84,7 @@ jobs:
 
 - Escopo funcional: somente issues (não PR).
 - Em evento que não seja `issues`, o caller deve enviar `issue_number`.
+- O lookup de Project tenta primeiro `organization(login)` e depois
+  `user(login)` para suportar project owner de ambos os tipos.
 - Acesso cross-repo a reusable workflows privados depende das políticas de
   Actions do repositório chamador e do repositório que hospeda o reusable.
