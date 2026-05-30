@@ -6,8 +6,8 @@
 
 ## Issues relacionadas
 
-- `Refs #`
-- `Closes #`
+- Refs #
+- Closes #
 
 ---
 

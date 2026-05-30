@@ -35,9 +35,9 @@ Quando aplicável, prefira abrir o PR usando um template específico:
 
 Exemplos:
 
-- `Refs #456`
-- `Closes #123`
-- `Related to Lumus-IT/sgi#789`
+- Refs #456
+- Closes #123
+- Related to Lumus-IT/sgi#789
 
 ---
 

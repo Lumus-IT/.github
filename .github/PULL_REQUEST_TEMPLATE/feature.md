@@ -12,8 +12,8 @@ Explique qual necessidade esta entrega resolve.
 
 ## Issues relacionadas
 
-- `Refs #`
-- `Closes #`
+- Refs #
+- Closes #
 
 ---
 
