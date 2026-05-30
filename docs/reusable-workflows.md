@@ -66,7 +66,7 @@ Este guia documenta os reusable workflows versionados no repositório
 - `issues.opened|reopened|edited` -> status `Triage` (ou input equivalente)
 - `pull_request.opened` -> `In-progress`
 - `pull_request.reopened` -> `Ready`
-- `pull_request.ready_for_review` -> `In review`
+- `pull_request.ready_for_review|review_requested` -> `In review`
 - `pull_request.closed` com merge -> `Done`
 - `pull_request.closed` sem merge -> `Cancelled`
 
@@ -95,7 +95,7 @@ on:
   issues:
     types: [opened, reopened, edited]
   pull_request:
-    types: [opened, reopened, ready_for_review, closed]
+    types: [opened, reopened, ready_for_review, review_requested, closed]
 
 jobs:
   route_issue_project:
