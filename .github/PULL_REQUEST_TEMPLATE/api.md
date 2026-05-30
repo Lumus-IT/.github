@@ -6,10 +6,8 @@
 
 ## Issues relacionadas
 
-```txt
-Fecha #
-Refs #
-```
+- `Refs #`
+- `Closes #`
 
 ---
 
