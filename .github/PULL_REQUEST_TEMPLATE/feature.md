@@ -12,10 +12,8 @@ Explique qual necessidade esta entrega resolve.
 
 ## Issues relacionadas
 
-```txt
-Fecha #
-Refs #
-```
+- Refs #
+- Closes #
 
 ---
 
