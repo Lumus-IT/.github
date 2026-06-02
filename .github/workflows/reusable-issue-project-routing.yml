@@ -44,10 +44,10 @@ name: Reusable Routing - Issue Project Status
         required: false
         default: Done
         type: string
-      status_name_cancelled:
+      status_name_canceled:
         description: Status para pull_request.closed sem merge
         required: false
-        default: Cancelled
+        default: Canceled
         type: string
       close_issue_on_merge:
         description: >-
@@ -93,7 +93,7 @@ jobs:
       INPUT_STATUS_READY: ${{ inputs.status_name_ready }}
       INPUT_STATUS_IN_REVIEW: ${{ inputs.status_name_in_review }}
       INPUT_STATUS_DONE: ${{ inputs.status_name_done }}
-      INPUT_STATUS_CANCELLED: ${{ inputs.status_name_cancelled }}
+      INPUT_STATUS_CANCELED: ${{ inputs.status_name_canceled }}
       INPUT_REQUIRE_STATUS_FIELD: ${{ inputs.require_status_field }}
       INPUT_CLOSE_ISSUE_ON_MERGE: ${{ inputs.close_issue_on_merge }}
     outputs:
@@ -204,7 +204,7 @@ jobs:
                     should_close_issue="true"
                   fi
                 else
-                  target_status_name="${INPUT_STATUS_CANCELLED}"
+                  target_status_name="${INPUT_STATUS_CANCELED}"
                 fi
                 ;;
               *)

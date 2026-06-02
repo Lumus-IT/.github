@@ -47,7 +47,7 @@ Este guia documenta os reusable workflows versionados no repositório
 - `status_name_ready` (default `Ready`)
 - `status_name_in_review` (default `In review`)
 - `status_name_done` (default `Done`)
-- `status_name_cancelled` (default `Cancelled`)
+- `status_name_canceled` (default `Canceled`)
 - `close_issue_on_merge` (default `false`)
 - `require_status_field` (default `true`)
 
