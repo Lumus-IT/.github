@@ -1,7 +1,7 @@
 name: Bug Report
 description: Reporte uma falha, erro, regressão ou comportamento inesperado.
 title: "[BUG] "
-labels: ["type: bug", "status: triage"]
+labels: ["type: bug"]
 assignees: []
 
 body:

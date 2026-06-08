@@ -2,7 +2,7 @@
 set -euo pipefail
 
 # Author: Diego Bonacolsi <diego@lumusit.com.br>
-# Version: 1.1
+# Version: 1.2
 # Date: 2026-05-23
 #
 # Sincroniza labels padronizadas da organização Lumus-IT nos repositórios definidos.
@@ -28,6 +28,11 @@ set -euo pipefail
 
 SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 LABELS_FILE="${SCRIPT_DIR}/labels.json"
+LOCAL_PROTOS_PROJECT_LABELS=(
+  $'project: the-vault\t4D120E\tDemanda relacionada ao Project The Vault'
+  $'project: sgi\t1a7746\tDemanda relacionada ao Project SGI'
+  $'project: github\tbfd4f2\tDemanda relacionada à estrutura da Lumus IT no GitHub (workflows, projects, actions, etc).'
+)
 
 DEFAULT_REPOS=(
   "Lumus-IT/.github"
@@ -99,6 +104,12 @@ run() {
   fi
 
   "$@"
+}
+
+normalize_repo_slug() {
+  local repo="${1:-}"
+
+  printf '%s' "$repo" | tr '[:upper:]' '[:lower:]'
 }
 
 label_exists() {
@@ -202,6 +213,45 @@ sync_standard_labels() {
   )
 }
 
+sync_local_protos_project_labels() {
+  local repo="$1"
+  local normalized_repo
+  local name
+  local color
+  local description
+
+  normalized_repo="$(normalize_repo_slug "$repo")"
+
+  if [[ "$normalized_repo" != "lumus-it/protos" ]]; then
+    return 0
+  fi
+
+  while IFS=$'\t' read -r name color description; do
+    echo "  - Sincronizando label local do protos: $name"
+
+    run gh label create "$name" \
+      --repo "$repo" \
+      --color "$color" \
+      --description "$description" \
+      --force
+  done < <(printf '%s\n' "${LOCAL_PROTOS_PROJECT_LABELS[@]}")
+}
+
+cleanup_non_protos_project_labels() {
+  local repo="$1"
+  local normalized_repo
+
+  normalized_repo="$(normalize_repo_slug "$repo")"
+
+  if [[ "$normalized_repo" == "lumus-it/protos" ]]; then
+    return 0
+  fi
+
+  delete_legacy_label "$repo" "project: the-vault"
+  delete_legacy_label "$repo" "project: sgi"
+  delete_legacy_label "$repo" "project: github"
+}
+
 require_cmd gh
 require_cmd jq
 
@@ -238,11 +288,32 @@ for repo in "${REPOS[@]}"; do
   rename_legacy_label "$repo" "feature" "type: feature"
   rename_legacy_label "$repo" "documentation" "type: documentation"
   rename_legacy_label "$repo" "codex" "source: codex"
-  rename_legacy_label "$repo" "backlog" "status: triage"
   rename_legacy_label "$repo" "hotfix" "risk: production"
   echo
 
   echo ">> Removendo labels legadas descartadas"
+  delete_legacy_label "$repo" "area: frontend"
+  delete_legacy_label "$repo" "area: backend"
+  delete_legacy_label "$repo" "area: api"
+  delete_legacy_label "$repo" "area: database"
+  delete_legacy_label "$repo" "area: infra"
+  delete_legacy_label "$repo" "area: docs"
+  delete_legacy_label "$repo" "area: security"
+  delete_legacy_label "$repo" "area: qa"
+  delete_legacy_label "$repo" "area: product"
+  delete_legacy_label "$repo" "priority: low"
+  delete_legacy_label "$repo" "priority: medium"
+  delete_legacy_label "$repo" "priority: high"
+  delete_legacy_label "$repo" "priority: critical"
+  delete_legacy_label "$repo" "type: api"
+  delete_legacy_label "$repo" "type: database"
+  delete_legacy_label "$repo" "status: triage"
+  delete_legacy_label "$repo" "status: blocked"
+  delete_legacy_label "$repo" "status: needs-info"
+  delete_legacy_label "$repo" "status: ready"
+  delete_legacy_label "$repo" "status: in-review"
+  delete_legacy_label "$repo" "status: canceled"
+  delete_legacy_label "$repo" "backlog"
   delete_legacy_label "$repo" "component"
   delete_legacy_label "$repo" "version"
   delete_legacy_label "$repo" "release"
@@ -251,12 +322,14 @@ for repo in "${REPOS[@]}"; do
   delete_legacy_label "$repo" "good first issue"
   delete_legacy_label "$repo" "help wanted"
   delete_legacy_label "$repo" "invalid"
+  cleanup_non_protos_project_labels "$repo"
   delete_legacy_label "$repo" "question"
   delete_legacy_label "$repo" "wontfix"
   echo
 
   echo ">> Criando/atualizando labels padronizadas"
   sync_standard_labels "$repo"
+  sync_local_protos_project_labels "$repo"
   echo
 done
 

@@ -1,7 +1,7 @@
 name: Exigência legal
 description: Registre uma demanda originada por obrigação legal, fiscal, regulatória ou contratual.
 title: "[LEGAL] "
-labels: ["type: legal", "source: legal", "status: triage"]
+labels: ["type: legal", "source: legal"]
 assignees: []
 
 body:

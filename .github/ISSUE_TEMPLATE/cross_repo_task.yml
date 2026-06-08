@@ -1,7 +1,7 @@
 name: Tarefa cross-repo
 description: Registre uma demanda que envolve mais de um repositório, produto ou frente técnica.
 title: "[CROSS-REPO] "
-labels: ["type: cross-repo", "status: triage"]
+labels: ["type: cross-repo"]
 assignees: []
 
 body:

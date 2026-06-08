@@ -1,7 +1,7 @@
 name: Novo endpoint (API)
 description: Registre a criação de um novo endpoint, contrato ou recurso de API.
 title: "[API] "
-labels: ["type: api", "area: backend", "area: api", "status: triage"]
+labels: ["type: feature"]
 assignees: []
 
 body:
