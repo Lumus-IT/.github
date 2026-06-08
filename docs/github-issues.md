@@ -56,12 +56,15 @@ Exemplos:
 
 - `type: bug`
 - `type: feature`
-- `type: database`
 - `type: devops`
 - `type: documentation`
-- `type: api`
 - `type: cross-repo`
 - `type: legal`
+
+Para demandas de endpoint, integração ou banco de dados:
+
+- use `Issue Type` como `Bug` ou `Feature`
+- use `Area` para marcar `API` ou `Database`
 
 ### risk:*
 

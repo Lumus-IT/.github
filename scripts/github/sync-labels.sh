@@ -29,8 +29,8 @@ set -euo pipefail
 SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 LABELS_FILE="${SCRIPT_DIR}/labels.json"
 LOCAL_PROTOS_PROJECT_LABELS=(
-  $'project: the-vault\tbfd4f2\tDemanda relacionada ao Project The Vault'
-  $'project: sgi\td4c5f9\tDemanda relacionada ao Project SGI'
+  $'project: the-vault\t4D120E\tDemanda relacionada ao Project The Vault'
+  $'project: sgi\t1a7746\tDemanda relacionada ao Project SGI'
   $'project: github\tbfd4f2\tDemanda relacionada à estrutura da Lumus IT no GitHub (workflows, projects, actions, etc).'
 )
 
@@ -293,6 +293,8 @@ for repo in "${REPOS[@]}"; do
   delete_legacy_label "$repo" "priority: medium"
   delete_legacy_label "$repo" "priority: high"
   delete_legacy_label "$repo" "priority: critical"
+  delete_legacy_label "$repo" "type: api"
+  delete_legacy_label "$repo" "type: database"
   delete_legacy_label "$repo" "status: triage"
   delete_legacy_label "$repo" "status: blocked"
   delete_legacy_label "$repo" "status: needs-info"
