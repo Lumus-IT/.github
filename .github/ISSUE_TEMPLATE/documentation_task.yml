@@ -1,7 +1,7 @@
 name: Tarefa de documentação
 description: Registre criação, revisão ou atualização de documentação técnica, funcional ou operacional.
 title: "[DOCS] "
-labels: ["type: documentation", "area: docs", "status: triage"]
+labels: ["type: documentation"]
 assignees: []
 
 body:

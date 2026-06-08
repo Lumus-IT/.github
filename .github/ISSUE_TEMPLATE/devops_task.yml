@@ -1,7 +1,7 @@
 name: Tarefa de DevOps
 description: Registre demandas de infraestrutura, deploy, automação, CI/CD, containers, servidores ou ambientes.
 title: "[DEVOPS] "
-labels: ["type: devops", "area: infra", "status: triage"]
+labels: ["type: devops"]
 assignees: []
 
 body:

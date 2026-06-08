@@ -1,7 +1,7 @@
 name: Tarefa de DB / Migration
 description: Registre alterações em banco de dados, migrations, seeders, índices ou scripts SQL.
 title: "[DB] "
-labels: ["type: database", "area: database", "status: triage"]
+labels: ["type: database"]
 assignees: []
 
 body:
