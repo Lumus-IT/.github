@@ -106,6 +106,12 @@ run() {
   "$@"
 }
 
+normalize_repo_slug() {
+  local repo="${1:-}"
+
+  printf '%s' "$repo" | tr '[:upper:]' '[:lower:]'
+}
+
 label_exists() {
   local repo="$1"
   local label="$2"
@@ -209,11 +215,14 @@ sync_standard_labels() {
 
 sync_local_protos_project_labels() {
   local repo="$1"
+  local normalized_repo
   local name
   local color
   local description
 
-  if [[ "$repo" != "Lumus-IT/protos" ]]; then
+  normalized_repo="$(normalize_repo_slug "$repo")"
+
+  if [[ "$normalized_repo" != "lumus-it/protos" ]]; then
     return 0
   fi
 
@@ -230,8 +239,11 @@ sync_local_protos_project_labels() {
 
 cleanup_non_protos_project_labels() {
   local repo="$1"
+  local normalized_repo
 
-  if [[ "$repo" == "Lumus-IT/protos" ]]; then
+  normalized_repo="$(normalize_repo_slug "$repo")"
+
+  if [[ "$normalized_repo" == "lumus-it/protos" ]]; then
     return 0
   fi
 
