@@ -568,40 +568,39 @@ jobs:
 
               if [ "${should_skip_triage_downgrade}" = "true" ]; then
                 echo "Issue ${issue_repo_owner}/${issue_repo_name}#${issue_number} (${issue_title}) mantida em ${current_status_name}; issues.edited não rebaixa automaticamente para ${TARGET_STATUS_NAME}."
-                continue
-              fi
-
-              mutation='mutation(
-                $projectId:ID!,
-                $itemId:ID!,
-                $fieldId:ID!,
-                $optionId:String!
-              ) {
-                updateProjectV2ItemFieldValue(
-                  input: {
-                    projectId: $projectId,
-                    itemId: $itemId,
-                    fieldId: $fieldId,
-                    value: {
-                      singleSelectOptionId: $optionId
+              else
+                mutation='mutation(
+                  $projectId:ID!,
+                  $itemId:ID!,
+                  $fieldId:ID!,
+                  $optionId:String!
+                ) {
+                  updateProjectV2ItemFieldValue(
+                    input: {
+                      projectId: $projectId,
+                      itemId: $itemId,
+                      fieldId: $fieldId,
+                      value: {
+                        singleSelectOptionId: $optionId
+                      }
+                    }
+                  ) {
+                    projectV2Item {
+                      id
                     }
                   }
-                ) {
-                  projectV2Item {
-                    id
-                  }
-                }
-              }'
+                }'
 
-              gh api graphql \
-                -f query="${mutation}" \
-                -F projectId="${PROJECT_ID}" \
-                -F itemId="${project_item_id}" \
-                -F fieldId="${STATUS_FIELD_ID}" \
-                -F optionId="${STATUS_OPTION_ID}" \
-                >/dev/null
+                gh api graphql \
+                  -f query="${mutation}" \
+                  -F projectId="${PROJECT_ID}" \
+                  -F itemId="${project_item_id}" \
+                  -F fieldId="${STATUS_FIELD_ID}" \
+                  -F optionId="${STATUS_OPTION_ID}" \
+                  >/dev/null
 
-              echo "Issue ${issue_repo_owner}/${issue_repo_name}#${issue_number} (${issue_title}) atualizada para status ${TARGET_STATUS_NAME}."
+                echo "Issue ${issue_repo_owner}/${issue_repo_name}#${issue_number} (${issue_title}) atualizada para status ${TARGET_STATUS_NAME}."
+              fi
             else
               echo "Issue ${issue_repo_owner}/${issue_repo_name}#${issue_number} (${issue_title}) adicionada/reaproveitada sem atualização de status."
             fi
