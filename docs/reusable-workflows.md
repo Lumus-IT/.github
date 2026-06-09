@@ -99,7 +99,7 @@ on:
 
 jobs:
   route_issue_project:
-    uses: Lumus-IT/.github/.github/workflows/reusable-issue-project-routing.yml@master
+    uses: Lumus-IT/.github/.github/workflows/reusable-issue-project-routing.yml@reusable-workflows-v1
     with:
       project_owner: Lumus-IT
       project_number: "6"
