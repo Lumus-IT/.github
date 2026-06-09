@@ -8,10 +8,8 @@
 - A Issue representa a demanda.
 - O Project representa o acompanhamento visual e operacional.
 - Cada tipo de informação deve ter uma única fonte de verdade.
-- Não duplique em label o que já existe como field nativo da Issue ou do
-  Project.
-- Nunca publique senhas, tokens, cookies, chaves privadas, arquivos `.env` ou
-  dados sensíveis.
+- Não duplique em label o que já existe como field nativo da Issue ou do Project.
+- Nunca publique senhas, tokens, cookies, chaves privadas, arquivos `.env` ou dados sensíveis.
 
 ## Fonte de verdade por informação
 
@@ -43,8 +41,7 @@
 - `priority:*`
 - `area:*`
 
-Essas labels foram aposentadas porque duplicavam informações que agora ficam em
-fields estruturados.
+Essas labels foram aposentadas porque duplicavam informações que agora ficam em fields estruturados.
 
 ## Famílias de labels vigentes
 
@@ -107,11 +104,9 @@ Exemplo atual:
 Use labels apenas para metadata que continua sendo útil como label:
 
 - `type:*`
+- `source:*`
 - `risk:*`, quando aplicável
-- `source:*`, quando aplicável
 - `project:*`, quando aplicável ao roteamento
-
-Não use labels de `status:*`, `priority:*` ou `area:*` em Issues.
 
 ### Pull Requests
 
@@ -122,8 +117,7 @@ Use no PR apenas labels que ainda fazem sentido no fluxo atual:
 - `type:*`
 - `risk:*`, quando aplicável
 
-O contexto de área deve vir da Issue vinculada, do Project e do diff do próprio
-PR, não de `area:*`.
+O contexto de área deve vir da Issue vinculada, do Project e do diff do próprio PR.
 
 ## Como preencher a demanda corretamente
 
@@ -131,16 +125,16 @@ PR, não de `area:*`.
 
 - o template correto;
 - o `Issue Type` nativo;
-- a `Priority` como Issue Field, quando o fluxo do repositório exigir;
-- `Start date` e `Target date`, quando fizer parte do planejamento;
-- labels `type:*`, `source:*`, `risk:*` e `project:*` quando couberem.
+- a `Priority`;
+- labels `type:*` e `source:*`;
+- labels `risk:*` e `project:*` quando couberem.
 
 ### Sempre definir no Project
 
 - `Status` como fonte de verdade para andamento;
 - `Area` como fonte de verdade para agrupamento técnico/funcional;
-- `Size`, `Estimate` e `Iteration` quando a operação do Project usar esses
-  campos.
+- `Size`, `Estimate`, `Start date` e `Target date`, durante a triagem;
+- `Iteration` para entrada no ciclo/sprint.
 
 ## Quando usar cross-repo
 
