@@ -433,6 +433,7 @@ jobs:
           processed_csv=""
           processed_issue_refs_json='[]'
           status_update_enabled="true"
+          action="$(jq -r '.action // empty' "${GITHUB_EVENT_PATH}")"
 
           if [ -z "${STATUS_FIELD_ID}" ] || [ -z "${STATUS_OPTION_ID}" ]; then
             status_update_enabled="false"
@@ -480,6 +481,18 @@ jobs:
                       project {
                         id
                       }
+                      fieldValues(first: 50) {
+                        nodes {
+                          ... on ProjectV2ItemFieldSingleSelectValue {
+                            name
+                            field {
+                              ... on ProjectV2FieldCommon {
+                                name
+                              }
+                            }
+                          }
+                        }
+                      }
                     }
                   }
                 }
@@ -496,6 +509,18 @@ jobs:
                   .data.node.projectItems.nodes[]?
                   | select(.project.id == $project_id)
                   | .id' |
+                head -n1
+            })"
+
+            current_status_name="$({
+              echo "${issue_projects_json}" |
+                jq -r --arg project_id "${PROJECT_ID}" '
+                  .data.node.projectItems.nodes[]?
+                  | select(.project.id == $project_id)
+                  | .fieldValues.nodes[]?
+                  | select(.field.name == "Status")
+                  | .name
+                ' |
                 head -n1
             })"
 
@@ -531,6 +556,21 @@ jobs:
             fi
 
             if [ "${status_update_enabled}" = "true" ]; then
+              should_skip_triage_downgrade="false"
+
+              if [ "${GITHUB_EVENT_NAME}" = "issues" ] && [ "${action}" = "edited" ]; then
+                case "${current_status_name}" in
+                  "${INPUT_STATUS_READY}"|"${INPUT_STATUS_IN_PROGRESS}"|"${INPUT_STATUS_IN_REVIEW}"|"${INPUT_STATUS_DONE}")
+                    should_skip_triage_downgrade="true"
+                    ;;
+                esac
+              fi
+
+              if [ "${should_skip_triage_downgrade}" = "true" ]; then
+                echo "Issue ${issue_repo_owner}/${issue_repo_name}#${issue_number} (${issue_title}) mantida em ${current_status_name}; issues.edited não rebaixa automaticamente para ${TARGET_STATUS_NAME}."
+                continue
+              fi
+
               mutation='mutation(
                 $projectId:ID!,
                 $itemId:ID!,
