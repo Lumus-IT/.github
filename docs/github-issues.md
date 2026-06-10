@@ -97,6 +97,37 @@ Exemplo atual:
 
 - no `Lumus-IT/protos`: `project: the-vault`, `project: sgi`, `project: github`
 
+## Governança de `project:*`
+
+### Regra oficial no `Lumus-IT/protos`
+
+No `Lumus-IT/protos`, toda Issue deve ter **exatamente uma** label `project:*`.
+
+Regras:
+
+- Issue sem `project:*` é inválida para o fluxo operacional do repositório.
+- Issue com mais de uma `project:*` deve falhar por segurança.
+- Issue com `project:*` não suportada deve falhar e exigir cadastro formal da
+  nova label no fluxo de automações antes do uso.
+
+### Regra oficial nos demais repositórios com caller fixo
+
+Nos repositórios que usam caller fixo de Project, `project:*` não faz parte do
+contrato local da Issue.
+
+Situação atual:
+
+- `Lumus-IT/sgi`
+- `Lumus-IT/elevare-nexus-api`
+- `Lumus-IT/elevare-lumen-ui`
+
+Nesses repositórios:
+
+- a automação não deve aceitar `project:*`;
+- se uma Issue ou Issue vinculada em PR usar `project:*`, o fluxo deve falhar
+  com mensagem clara;
+- novas necessidades de roteamento por label devem ser incorporadas formalmente à automação antes de uso.
+
 ## Labels em Issues vs. Pull Requests
 
 ### Issues
