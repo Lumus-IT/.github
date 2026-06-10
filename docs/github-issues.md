@@ -188,6 +188,8 @@ Nesses casos:
 - Não duplique prioridade em label se ela já estiver em `Priority`.
 - Não duplique área em label se ela já estiver em `Area`.
 - Não use `status:*`; mova o item no Project e deixe `Status` refletir o fluxo.
+- Em repositórios com automação de Projects, mantenha apenas uma label
+  `project:*` por Issue.
 - Em caso de cancelamento, duplicidade ou descarte, comente o motivo, ajuste o
   `Status`/fechamento conforme o fluxo e encerre a Issue.
 
