@@ -40,12 +40,12 @@ name: Reusable Routing - Issue Project Status
         default: In review
         type: string
       status_name_done:
-        description: Status para pull_request.closed com merge
+        description: Status para pull_request.closed com merge e issues.closed com completed
         required: false
         default: Done
         type: string
       status_name_canceled:
-        description: Status para pull_request.closed sem merge
+        description: Status para pull_request.closed sem merge e issues.closed sem completed
         required: false
         default: Canceled
         type: string
@@ -163,9 +163,36 @@ jobs:
             fi
 
             if [ "${should_process}" = "true" ]; then
+              issue_state_reason="$(jq -r '.issue.state_reason // empty' "${GITHUB_EVENT_PATH}")"
+
               case "${action}" in
                 opened|reopened|edited)
                   target_status_name="${INPUT_STATUS_TRIAGE}"
+                  issue_number="$(jq -r '.issue.number // empty' "${GITHUB_EVENT_PATH}")"
+                  if ! [[ "${issue_number}" =~ ^[0-9]+$ ]]; then
+                    echo "Número de issue inválido no payload: ${issue_number}"
+                    exit 1
+                  fi
+                  issue_refs_json="$(
+                    jq -nc \
+                      --arg owner "${repo_owner_current}" \
+                      --arg name "${repo_name_current}" \
+                      --argjson number "${issue_number}" \
+                      '[{owner: $owner, name: $name, number: $number}]'
+                  )"
+                  ;;
+                closed)
+                  case "${issue_state_reason}" in
+                    completed)
+                      target_status_name="${INPUT_STATUS_DONE}"
+                      ;;
+                    not_planned|duplicate|"")
+                      target_status_name="${INPUT_STATUS_CANCELED}"
+                      ;;
+                    *)
+                      target_status_name="${INPUT_STATUS_CANCELED}"
+                      ;;
+                  esac
                   issue_number="$(jq -r '.issue.number // empty' "${GITHUB_EVENT_PATH}")"
                   if ! [[ "${issue_number}" =~ ^[0-9]+$ ]]; then
                     echo "Número de issue inválido no payload: ${issue_number}"
@@ -304,6 +331,9 @@ jobs:
 
           if [ "${should_process}" = "true" ]; then
             echo "Roteamento ativo para ${event_name}.${action}: status=${target_status_name}."
+            if [ "${event_name}" = "issues" ] && [ "${action}" = "closed" ]; then
+              echo "state_reason da issue fechada: ${issue_state_reason:-<empty>}"
+            fi
             echo "Issues alvo: ${issue_refs_json}"
           else
             echo "Roteamento ignorado: ${skip_reason}"

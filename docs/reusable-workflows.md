@@ -64,11 +64,19 @@ Este guia documenta os reusable workflows versionados no repositório
 ### Regras de roteamento implementadas
 
 - `issues.opened|reopened|edited` -> status `Triage` (ou input equivalente)
+- `issues.closed` com `state_reason=completed` -> `Done`
+- `issues.closed` com `state_reason=not_planned|duplicate` -> `Canceled`
+- `issues.closed` sem `state_reason` explícito -> `Canceled`
 - `pull_request.opened` -> `In-progress`
 - `pull_request.reopened` -> `Ready`
 - `pull_request.ready_for_review|review_requested` -> `In review`
 - `pull_request.closed` com merge -> `Done`
-- `pull_request.closed` sem merge -> `Cancelled`
+- `pull_request.closed` sem merge -> `Canceled`
+
+### Política de reabertura
+
+- `issues.reopened` volta para `Triage`
+- `pull_request.reopened` move a issue vinculada para `Ready`
 
 ### Vínculo PR -> Issue
 
@@ -93,13 +101,13 @@ name: Issue Project Automation
 
 on:
   issues:
-    types: [opened, reopened, edited]
+    types: [opened, reopened, edited, closed]
   pull_request:
     types: [opened, reopened, ready_for_review, review_requested, closed]
 
 jobs:
   route_issue_project:
-    uses: Lumus-IT/.github/.github/workflows/reusable-issue-project-routing.yml@reusable-workflows-v1
+    uses: Lumus-IT/.github/.github/workflows/reusable-issue-project-routing.yml@reusable-workflows-v2
     with:
       project_owner: Lumus-IT
       project_number: "6"
