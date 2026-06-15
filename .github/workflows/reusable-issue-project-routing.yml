@@ -140,6 +140,49 @@ jobs:
               '
           }
 
+          latest_closed_event_json() {
+            local owner="${1:-}"
+            local name="${2:-}"
+            local number="${3:-}"
+            local query
+
+            query='query($owner:String!, $name:String!, $number:Int!) {
+              repository(owner: $owner, name: $name) {
+                issue(number: $number) {
+                  timelineItems(itemTypes: [CLOSED_EVENT], last: 1) {
+                    nodes {
+                      ... on ClosedEvent {
+                        createdAt
+                        stateReason
+                        actor {
+                          __typename
+                          login
+                        }
+                        closer {
+                          __typename
+                          ... on PullRequest {
+                            number
+                            repository {
+                              nameWithOwner
+                            }
+                            mergedAt
+                          }
+                        }
+                      }
+                    }
+                  }
+                }
+              }
+            }'
+
+            gh api graphql \
+              -f query="${query}" \
+              -F owner="${owner}" \
+              -F name="${name}" \
+              -F number="${number}" |
+              jq -c '.data.repository.issue.timelineItems.nodes[0] // {}'
+          }
+
           event_name="${GITHUB_EVENT_NAME}"
           action="$(jq -r '.action // empty' "${GITHUB_EVENT_PATH}")"
           repo_owner_current="${GITHUB_REPOSITORY%/*}"
@@ -147,9 +190,11 @@ jobs:
 
           should_process="true"
           should_close_issue="false"
+          should_update_status="true"
           target_status_name=""
           issue_refs_json='[]'
           skip_reason=""
+          pr_merged="false"
 
           if [ "${event_name}" = "issues" ]; then
             issue_is_pr="$({
@@ -182,29 +227,54 @@ jobs:
                   )"
                   ;;
                 closed)
-                  case "${issue_state_reason}" in
-                    completed)
-                      target_status_name="${INPUT_STATUS_DONE}"
-                      ;;
-                    not_planned|duplicate|"")
-                      target_status_name="${INPUT_STATUS_CANCELED}"
-                      ;;
-                    *)
-                      target_status_name="${INPUT_STATUS_CANCELED}"
-                      ;;
-                  esac
                   issue_number="$(jq -r '.issue.number // empty' "${GITHUB_EVENT_PATH}")"
                   if ! [[ "${issue_number}" =~ ^[0-9]+$ ]]; then
                     echo "Número de issue inválido no payload: ${issue_number}"
                     exit 1
                   fi
-                  issue_refs_json="$(
-                    jq -nc \
-                      --arg owner "${repo_owner_current}" \
-                      --arg name "${repo_name_current}" \
-                      --argjson number "${issue_number}" \
-                      '[{owner: $owner, name: $name, number: $number}]'
+
+                  closed_event_json="$(
+                    latest_closed_event_json \
+                      "${repo_owner_current}" \
+                      "${repo_name_current}" \
+                      "${issue_number}"
                   )"
+
+                  closed_by_pull_request="$(
+                    echo "${closed_event_json}" |
+                      jq -r 'if .closer.__typename == "PullRequest" then "true" else "false" end'
+                  )"
+
+                  if [ "${closed_by_pull_request}" = "true" ]; then
+                    merged_pr_label="$(
+                      echo "${closed_event_json}" |
+                        jq -r '
+                          .closer
+                          | "\(.repository.nameWithOwner // "repo-desconhecido")#\(.number // 0)"
+                        '
+                    )"
+                    should_process="false"
+                    skip_reason="Issue fechada por merge de pull request (${merged_pr_label}); atualização já tratada por pull_request.closed."
+                  else
+                    case "${issue_state_reason}" in
+                      completed)
+                        target_status_name="${INPUT_STATUS_DONE}"
+                        ;;
+                      not_planned|duplicate|"")
+                        target_status_name="${INPUT_STATUS_CANCELED}"
+                        ;;
+                      *)
+                        target_status_name="${INPUT_STATUS_CANCELED}"
+                        ;;
+                    esac
+                    issue_refs_json="$(
+                      jq -nc \
+                        --arg owner "${repo_owner_current}" \
+                        --arg name "${repo_name_current}" \
+                        --argjson number "${issue_number}" \
+                        '[{owner: $owner, name: $name, number: $number}]'
+                    )"
+                  fi
                   ;;
                 *)
                   should_process="false"
@@ -224,8 +294,8 @@ jobs:
                 target_status_name="${INPUT_STATUS_IN_REVIEW}"
                 ;;
               closed)
-                merged="$(jq -r '.pull_request.merged // false' "${GITHUB_EVENT_PATH}")"
-                if [ "${merged}" = "true" ]; then
+                pr_merged="$(jq -r '.pull_request.merged // false' "${GITHUB_EVENT_PATH}")"
+                if [ "${pr_merged}" = "true" ]; then
                   target_status_name="${INPUT_STATUS_DONE}"
                   if [ "${INPUT_CLOSE_ISSUE_ON_MERGE}" = "true" ]; then
                     should_close_issue="true"
@@ -291,7 +361,9 @@ jobs:
                   '
               })"
 
-              if [ "$(echo "${issue_refs_json}" | jq 'length')" -eq 0 ] && \
+              closing_issue_refs_count="$(echo "${issue_refs_json}" | jq 'length')"
+
+              if [ "${closing_issue_refs_count}" -eq 0 ] && \
                 [ -n "${INPUT_ISSUE_NUMBERS_CSV}" ]; then
                 issue_refs_json="$(
                   csv_to_issue_refs_json \
@@ -305,6 +377,12 @@ jobs:
                 should_process="false"
                 skip_reason="Nenhuma issue vinculada na PR (closingIssuesReferences) e sem fallback issue_numbers_csv."
               fi
+
+              if [ "${should_process}" = "true" ] && [ "${pr_merged}" = "true" ]; then
+                if [ "${closing_issue_refs_count}" -gt 0 ]; then
+                  should_close_issue="false"
+                fi
+              fi
             fi
           else
             should_process="false"
@@ -313,6 +391,7 @@ jobs:
 
           echo "should_process=${should_process}" >> "${GITHUB_OUTPUT}"
           echo "should_close_issue=${should_close_issue}" >> "${GITHUB_OUTPUT}"
+          echo "should_update_status=${should_update_status}" >> "${GITHUB_OUTPUT}"
           {
             echo "issue_refs_json<<__ISSUE_REFS_JSON_EOF__"
             echo "${issue_refs_json}"
@@ -331,6 +410,9 @@ jobs:
 
           if [ "${should_process}" = "true" ]; then
             echo "Roteamento ativo para ${event_name}.${action}: status=${target_status_name}."
+            if [ "${should_update_status}" != "true" ]; then
+              echo "Atualização de status nesta execução foi adiada; o status final será aplicado por issues.closed após o fechamento da issue."
+            fi
             if [ "${event_name}" = "issues" ] && [ "${action}" = "closed" ]; then
               echo "state_reason da issue fechada: ${issue_state_reason:-<empty>}"
             fi
@@ -457,12 +539,13 @@ jobs:
           PROJECT_ID: ${{ steps.project.outputs.project_id }}
           STATUS_FIELD_ID: ${{ steps.project.outputs.status_field_id }}
           STATUS_OPTION_ID: ${{ steps.project.outputs.status_option_id }}
+          SHOULD_UPDATE_STATUS: ${{ steps.context.outputs.should_update_status }}
         run: |
           set -euo pipefail
 
           processed_csv=""
           processed_issue_refs_json='[]'
-          status_update_enabled="true"
+          status_update_enabled="${SHOULD_UPDATE_STATUS:-true}"
           action="$(jq -r '.action // empty' "${GITHUB_EVENT_PATH}")"
 
           if [ -z "${STATUS_FIELD_ID}" ] || [ -z "${STATUS_OPTION_ID}" ]; then
@@ -702,6 +785,7 @@ jobs:
               --method PATCH \
               "repos/${issue_repo_owner}/${issue_repo_name}/issues/${issue_number}" \
               -f state='closed' \
+              -f state_reason='completed' \
               >/dev/null
 
             echo "Issue ${issue_repo_owner}/${issue_repo_name}#${issue_number} fechada por close_issue_on_merge=true."
@@ -726,9 +810,14 @@ jobs:
             close_applied="false"
             echo "Sem roteamento nesta execução: ${{ steps.context.outputs.skip_reason }}"
           else
-            echo "Roteamento concluído."
+            if [ "${{ steps.context.outputs.should_update_status }}" != "true" ]; then
+              applied_status_name=""
+              echo "Roteamento concluído sem atualização de status nesta execução; aguardando issues.closed."
+            else
+              echo "Roteamento concluído."
+              echo "Status aplicado: ${applied_status_name}"
+            fi
             echo "Issues processadas: ${processed_issue_numbers}"
-            echo "Status aplicado: ${applied_status_name}"
           fi
 
           echo "processed_issue_numbers=${processed_issue_numbers}" >> "${GITHUB_OUTPUT}"
