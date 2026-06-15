@@ -319,7 +319,11 @@ jobs:
 
               pr_query='query($owner:String!, $name:String!, $number:Int!) {
                 repository(owner: $owner, name: $name) {
+                  defaultBranchRef {
+                    name
+                  }
                   pullRequest(number: $number) {
+                    baseRefName
                     closingIssuesReferences(first: 50) {
                       nodes {
                         number
@@ -362,6 +366,14 @@ jobs:
               })"
 
               closing_issue_refs_count="$(echo "${issue_refs_json}" | jq 'length')"
+              pr_base_ref_name="$(
+                echo "${pr_json}" |
+                  jq -r '.data.repository.pullRequest.baseRefName // empty'
+              )"
+              repo_default_branch_name="$(
+                echo "${pr_json}" |
+                  jq -r '.data.repository.defaultBranchRef.name // empty'
+              )"
 
               if [ "${closing_issue_refs_count}" -eq 0 ] && \
                 [ -n "${INPUT_ISSUE_NUMBERS_CSV}" ]; then
@@ -379,7 +391,10 @@ jobs:
               fi
 
               if [ "${should_process}" = "true" ] && [ "${pr_merged}" = "true" ]; then
-                if [ "${closing_issue_refs_count}" -gt 0 ]; then
+                if [ "${closing_issue_refs_count}" -gt 0 ] && \
+                  [ -n "${pr_base_ref_name}" ] && \
+                  [ -n "${repo_default_branch_name}" ] && \
+                  [ "${pr_base_ref_name}" = "${repo_default_branch_name}" ]; then
                   should_close_issue="false"
                 fi
               fi
