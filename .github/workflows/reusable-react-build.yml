@@ -1,0 +1,91 @@
+name: Gerar build React
+
+on:
+  workflow_call:
+    inputs:
+      node_version:
+        description: Versão do Node.js
+        required: false
+        type: string
+        default: "18.19.1"
+
+      working_directory:
+        description: Diretório que contém o package.json
+        required: false
+        type: string
+        default: "react"
+
+      output_directory:
+        description: Diretório gerado pelo build
+        required: false
+        type: string
+        default: "public-react"
+
+      commit_build:
+        description: Fazer commit e push do build gerado
+        required: false
+        type: boolean
+        default: false
+
+      commit_message:
+        description: Mensagem do commit do build
+        required: false
+        type: string
+        default: "chore: atualiza build React"
+
+concurrency:
+  group: react-build-${{ github.repository }}-${{ github.ref_name }}
+  cancel-in-progress: true
+
+jobs:
+  build:
+    name: Gerar build
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Baixar código do projeto
+        uses: actions/checkout@v7
+        with:
+          ref: ${{ github.ref_name }}
+
+      - name: Configurar Node.js
+        uses: actions/setup-node@v7
+        with:
+          node-version: ${{ inputs.node_version }}
+          cache: npm
+          cache-dependency-path: ${{ inputs.working_directory }}/package-lock.json
+
+      - name: Instalar dependências
+        working-directory: ${{ inputs.working_directory }}
+        run: npm ci
+
+      - name: Gerar build
+        working-directory: ${{ inputs.working_directory }}
+        run: npm run build
+
+      - name: Validar build gerado
+        env:
+          OUTPUT_DIRECTORY: ${{ inputs.output_directory }}
+        run: |
+          test -d "$OUTPUT_DIRECTORY"
+          test -f "$OUTPUT_DIRECTORY/index.html"
+          echo "Build gerado com sucesso em $OUTPUT_DIRECTORY"
+
+      - name: Enviar build atualizado
+        if: ${{ inputs.commit_build }}
+        env:
+          OUTPUT_DIRECTORY: ${{ inputs.output_directory }}
+          COMMIT_MESSAGE: ${{ inputs.commit_message }}
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+
+          git add -- "$OUTPUT_DIRECTORY"
+
+          if git diff --cached --quiet; then
+            echo "Nenhuma alteração no build para enviar."
+            exit 0
+          fi
+
+          git commit -m "$COMMIT_MESSAGE"
+          git push origin "HEAD:${GITHUB_REF_NAME}"
