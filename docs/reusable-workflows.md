@@ -2,13 +2,15 @@
 
 Este guia documenta os reusable workflows versionados no repositório
 `Lumus-IT/.github` para automações de Issues/Projects.
+Este repositório também disponibiliza workflows reutilizáveis para automações de build de aplicações.
 
 ## Workflows disponíveis
 
-| Workflow | Papel | Escopo |
-| --- | --- | --- |
-| `.github/workflows/reusable-issue-project-foundation.yml` | Resolve contexto base (issue + metadados do Project) | Somente leitura/validação |
-| `.github/workflows/reusable-issue-project-routing.yml` | Garante item no Project e atualiza `Status` conforme evento | Mutação de Project e, opcionalmente, fechamento de issue |
+| Workflow                                                  | Papel                                                       | Escopo                                                   |
+| --------------------------------------------------------- | ----------------------------------------------------------- | -------------------------------------------------------- |
+| `.github/workflows/reusable-issue-project-foundation.yml` | Resolve contexto base (issue + metadados do Project)        | Somente leitura/validação                                |
+| `.github/workflows/reusable-issue-project-routing.yml`    | Garante item no Project e atualiza `Status` conforme evento | Mutação de Project e, opcionalmente, fechamento de issue |
+| `.github/workflows/reusable-react-build.yml`              | Instala dependências, gera e valida o build React           | Validação e publicação opcional do build                 |
 
 ## 1) Foundation (`reusable-issue-project-foundation.yml`)
 
@@ -133,3 +135,70 @@ jobs:
   `Organization` e `User`.
 - Acesso cross-repo a reusable workflows depende das políticas de Actions dos
   repositórios envolvidos.
+
+  ## 3) Build React (`reusable-react-build.yml`)
+
+Este workflow instala as dependências, gera e valida o build de projetos React.
+
+### Inputs
+
+- `node_version` (string, opcional, default `18.19.1`)
+- `working_directory` (string, opcional, default `react`)
+- `output_directory` (string, opcional, default `public-react`)
+- `commit_build` (boolean, opcional, default `false`)
+- `commit_message` (string, opcional, default `chore: atualiza build React`)
+
+O `working_directory` deve apontar para o diretório que contém o
+`package.json` e o `package-lock.json`.
+
+O `output_directory` é relativo à raiz do repositório chamador.
+
+### Permissões
+
+As permissões são definidas pelo workflow chamador.
+
+Para testar o build sem publicar alterações:
+
+- usar `contents: read`
+- usar `commit_build: false`
+
+Para publicar o build automaticamente:
+
+- usar `contents: write`
+- usar `commit_build: true`
+
+### Comportamento
+
+- Instala as dependências com `npm ci`.
+- Executa `npm run build`.
+- Valida a criação do diretório de saída e do arquivo `index.html`.
+- Evita execuções simultâneas para a mesma branch.
+- Quando habilitado, cria e envia um commit com o build gerado.
+
+### Exemplo de caller
+
+```yaml
+name: Atualizar build React
+
+on:
+  push:
+    branches:
+      - develop
+    paths:
+      - "react/**"
+
+permissions:
+  contents: write
+
+jobs:
+  build:
+    uses: Lumus-IT/.github/.github/workflows/reusable-react-build.yml@react-build-v1.0.0
+    with:
+      node_version: "18.19.1"
+      working_directory: "react"
+      output_directory: "public-react"
+      commit_build: true
+      commit_message: "chore: atualiza build React"
+```
+
+A referência `react-build-v1.0.0` representa a versão estável do workflow após sua publicação.
