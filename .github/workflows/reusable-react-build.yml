@@ -7,7 +7,7 @@ on:
         description: Versão do Node.js
         required: false
         type: string
-        default: "18.19.1"
+        default: "24.22.1"
 
       working_directory:
         description: Diretório que contém o package.json
