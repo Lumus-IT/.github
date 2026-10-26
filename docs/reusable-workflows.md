@@ -66,7 +66,8 @@ Este repositório também disponibiliza workflows reutilizáveis para automaçõ
 
 ### Regras de roteamento implementadas
 
-- `issues.opened|reopened|edited` -> status `Triage` (ou input equivalente)
+- `issues.opened|reopened|edited|labeled|unlabeled` -> status `Triage` (ou
+  input equivalente)
 - `issues.closed` com `state_reason=completed` -> `Done`
 - `issues.closed` com `state_reason=not_planned|duplicate` -> `Canceled`
 - `issues.closed` sem `state_reason` explícito -> `Canceled`
@@ -80,6 +81,8 @@ Este repositório também disponibiliza workflows reutilizáveis para automaçõ
 
 - `issues.reopened` volta para `Triage`
 - `pull_request.reopened` move a issue vinculada para `Ready`
+- `issues.edited|labeled|unlabeled` não rebaixa automaticamente issues que já
+  estejam em `Ready`, `In-progress`, `In review`, `Done` ou `Canceled`
 
 ### Vínculo PR -> Issue
 
@@ -104,7 +107,7 @@ name: Issue Project Automation
 
 on:
   issues:
-    types: [opened, reopened, edited, closed]
+    types: [opened, reopened, edited, labeled, unlabeled, closed]
   pull_request:
     types: [opened, reopened, ready_for_review, review_requested, closed]
 
