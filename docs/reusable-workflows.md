@@ -142,7 +142,7 @@ Este workflow instala as dependências, gera e valida o build de projetos React.
 
 ### Inputs
 
-- `node_version` (string, opcional, default `18.19.1`)
+- `node_version` (string, opcional, default `24.22.1`)
 - `working_directory` (string, opcional, default `react`)
 - `output_directory` (string, opcional, default `public-react`)
 - `commit_build` (boolean, opcional, default `false`)
@@ -194,7 +194,7 @@ jobs:
   build:
     uses: Lumus-IT/.github/.github/workflows/reusable-react-build.yml@react-build-v1.0.0
     with:
-      node_version: "18.19.1"
+      node_version: "24.22.1"
       working_directory: "react"
       output_directory: "public-react"
       commit_build: true
