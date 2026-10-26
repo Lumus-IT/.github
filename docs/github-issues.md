@@ -93,9 +93,19 @@ Usada apenas quando o repositório participa de roteamento automático para
 Projects específicos e essa família tiver sido definida localmente naquele
 repositório.
 
-Exemplo atual:
+No `Lumus-IT/protos`, o roteamento vigente é:
 
-- no `Lumus-IT/protos`: `project: the-vault`, `project: sgi`, `project: github`
+| Label | Project de destino |
+| --- | --- |
+| `project: the-vault` | Project `#3` (`The Vault`) |
+| `project: sgi` | Project `#5` (`SGI`) |
+| `project: github` | Project `#6` (`Lumus`) |
+| `project: rustdesk` | Project `#6` (`Lumus`) |
+| `project: dutra` | Project `#6` (`Lumus`) |
+| `project: infra` | Project `#6` (`Lumus`) |
+
+O Project `#6` é o backlog transversal da Lumus IT. As labels que compartilham
+esse destino preservam a classificação de cada demanda.
 
 ## Governança de `project:*`
 
