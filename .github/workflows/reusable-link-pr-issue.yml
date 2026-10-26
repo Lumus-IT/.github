@@ -1,0 +1,211 @@
+---
+name: Reusable - Vincular PR à issue
+
+'on':
+  workflow_call:
+    inputs:
+      pr_number:
+        description: Número da pull request no repositório chamador
+        required: true
+        type: number
+    outputs:
+      issue_number:
+        description: Número da issue extraído da branch, quando aplicável
+        value: ${{ jobs.link.outputs.issue_number }}
+      linked:
+        description: true quando o vínculo foi criado nesta execução
+        value: ${{ jobs.link.outputs.linked }}
+      result:
+        description: Resultado final da tentativa de vínculo
+        value: ${{ jobs.link.outputs.result }}
+
+concurrency:
+  group: link-pr-issue-${{ github.repository }}-${{ inputs.pr_number }}
+  cancel-in-progress: false
+
+jobs:
+  link:
+    name: Vincular PR à issue
+    runs-on: ubuntu-latest
+    permissions:
+      issues: write
+      pull-requests: read
+    env:
+      GH_TOKEN: ${{ github.token }}
+      INPUT_PR_NUMBER: ${{ inputs.pr_number }}
+    outputs:
+      issue_number: ${{ steps.link.outputs.issue_number }}
+      linked: ${{ steps.link.outputs.linked }}
+      result: ${{ steps.link.outputs.result }}
+    steps:
+      - name: Resolver e vincular issue
+        id: link
+        shell: bash
+        run: |
+          # shellcheck disable=SC2016
+          set -euo pipefail
+
+          set_result() {
+            local linked="${1}"
+            local issue_number="${2}"
+            local result="${3}"
+
+            {
+              echo "linked=${linked}"
+              echo "issue_number=${issue_number}"
+              echo "result=${result}"
+            } >> "${GITHUB_OUTPUT}"
+          }
+
+          set_result "false" "" "nao_processado"
+
+          case "${GITHUB_EVENT_NAME}" in
+            pull_request|pull_request_target)
+              ;;
+            *)
+              echo "::error::Este workflow exige um evento de pull request."
+              exit 1
+              ;;
+          esac
+
+          if ! [[ "${INPUT_PR_NUMBER}" =~ ^[1-9][0-9]*$ ]]; then
+            echo "::error::Número de pull request inválido."
+            exit 1
+          fi
+
+          repository_owner="${GITHUB_REPOSITORY%/*}"
+          repository_name="${GITHUB_REPOSITORY#*/}"
+
+          pr_query='query($owner:String!, $name:String!, $number:Int!) {
+            repository(owner: $owner, name: $name) {
+              pullRequest(number: $number) {
+                id
+                baseRefName
+                headRefName
+                headRepository {
+                  nameWithOwner
+                }
+                closingIssuesReferences(first: 100) {
+                  nodes {
+                    id
+                  }
+                }
+              }
+            }
+          }'
+
+          if ! pr_json="$(gh api graphql \
+            -f query="${pr_query}" \
+            -F owner="${repository_owner}" \
+            -F name="${repository_name}" \
+            -F number="${INPUT_PR_NUMBER}")"; then
+            echo "::error::Falha ao consultar a pull request pela API."
+            exit 1
+          fi
+
+          pr_id="$(echo "${pr_json}" | jq -r '
+            .data.repository.pullRequest.id // empty
+          ')"
+          base_ref="$(echo "${pr_json}" | jq -r '
+            .data.repository.pullRequest.baseRefName // empty
+          ')"
+          head_ref="$(echo "${pr_json}" | jq -r '
+            .data.repository.pullRequest.headRefName // empty
+          ')"
+          head_repository="$(echo "${pr_json}" | jq -r '
+            .data.repository.pullRequest.headRepository.nameWithOwner
+            // empty
+          ')"
+
+          if [ -z "${pr_id}" ] || [ -z "${head_ref}" ]; then
+            echo "::error::Pull request não encontrada no repositório chamador."
+            exit 1
+          fi
+
+          if [ "${head_repository,,}" != "${GITHUB_REPOSITORY,,}" ]; then
+            echo "::notice::Pull request de fork ignorada por segurança."
+            set_result "false" "" "fork_ignorado"
+            exit 0
+          fi
+
+          branch_pattern='^[[:alpha:]][-[:alnum:]_.]*/'
+          branch_pattern+='([1-9][0-9]*)([-_].+)?$'
+
+          if [[ ! "${head_ref}" =~ ${branch_pattern} ]]; then
+            echo "::notice::Branch sem número de issue reconhecível;" \
+              "nada a fazer."
+            set_result "false" "" "branch_ignorada"
+            exit 0
+          fi
+
+          issue_number="${BASH_REMATCH[1]}"
+
+          issue_query='query($owner:String!, $name:String!, $number:Int!) {
+            repository(owner: $owner, name: $name) {
+              issue(number: $number) {
+                id
+              }
+            }
+          }'
+
+          if ! issue_json="$(gh api graphql \
+            -f query="${issue_query}" \
+            -F owner="${repository_owner}" \
+            -F name="${repository_name}" \
+            -F number="${issue_number}")"; then
+            echo "::error::Falha ao validar a issue #${issue_number}."
+            exit 1
+          fi
+
+          issue_id="$(echo "${issue_json}" | jq -r '
+            .data.repository.issue.id // empty
+          ')"
+
+          if [ -z "${issue_id}" ]; then
+            echo "::error::Issue #${issue_number} não encontrada" \
+              "neste repositório."
+            exit 1
+          fi
+
+          if echo "${pr_json}" | jq -e --arg issue_id "${issue_id}" '
+            .data.repository.pullRequest.closingIssuesReferences.nodes
+            | any(.id == $issue_id)
+          ' >/dev/null; then
+            echo "PR #${INPUT_PR_NUMBER} já está vinculada" \
+              "à issue #${issue_number}."
+            set_result "false" "${issue_number}" "ja_vinculado"
+            exit 0
+          fi
+
+          mutation='mutation($issueId:ID!, $pullRequestId:ID!) {
+            addCloseIssueReferences(input: {
+              issueId: $issueId,
+              pullRequestIds: [$pullRequestId]
+            }) {
+              issue {
+                id
+              }
+            }
+          }'
+
+          if ! mutation_json="$(gh api graphql \
+            -f query="${mutation}" \
+            -F issueId="${issue_id}" \
+            -F pullRequestId="${pr_id}")"; then
+            echo "::error::Falha ao vincular a PR à issue."
+            echo "::error::Confirme a permissão issues: write no caller."
+            exit 1
+          fi
+
+          linked_issue_id="$(echo "${mutation_json}" | jq -r '
+            .data.addCloseIssueReferences.issue.id // empty
+          ')"
+
+          if [ "${linked_issue_id}" != "${issue_id}" ]; then
+            echo "::error::A API não confirmou o vínculo solicitado."
+            exit 1
+          fi
+
+          echo "PR #${INPUT_PR_NUMBER} vinculada à issue #${issue_number}."
+          echo "Branch: ${head_ref}; destino: ${base_ref}."
+          set_result "true" "${issue_number}" "vinculado"
