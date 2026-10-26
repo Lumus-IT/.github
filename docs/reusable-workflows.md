@@ -10,6 +10,7 @@ Este repositório também disponibiliza workflows reutilizáveis para automaçõ
 | --------------------------------------------------------- | ----------------------------------------------------------- | -------------------------------------------------------- |
 | `.github/workflows/reusable-issue-project-foundation.yml` | Resolve contexto base (issue + metadados do Project)        | Somente leitura/validação                                |
 | `.github/workflows/reusable-issue-project-routing.yml`    | Garante item no Project e atualiza `Status` conforme evento | Mutação de Project e, opcionalmente, fechamento de issue |
+| `.github/workflows/reusable-link-pr-issue.yml`            | Vincula PR à issue indicada na branch                       | Mutation do vínculo nativo em **Development**            |
 | `.github/workflows/reusable-react-build.yml`              | Instala dependências, gera e valida o build React           | Validação e publicação opcional do build                 |
 
 ## 1) Foundation (`reusable-issue-project-foundation.yml`)
@@ -136,7 +137,99 @@ jobs:
 - Acesso cross-repo a reusable workflows depende das políticas de Actions dos
   repositórios envolvidos.
 
-  ## 3) Build React (`reusable-react-build.yml`)
+## 3) Vínculo PR -> issue (`reusable-link-pr-issue.yml`)
+
+Este workflow registra o vínculo nativo exibido na seção **Development** da
+issue. Durante sua execução, ele não altera título ou corpo da PR nem muda o
+estado da issue.
+
+### Input
+
+- `pr_number` (number, obrigatório): número da PR no repositório chamador.
+
+### Outputs
+
+- `issue_number`: número extraído da branch, vazio quando não aplicável.
+- `linked`: `true` somente quando o vínculo foi criado na execução atual.
+- `result`: `vinculado`, `ja_vinculado`, `fork_ignorado` ou
+  `branch_ignorada` nas execuções concluídas sem erro.
+
+### Convenção de branch
+
+O formato aceito é `prefixo/numero-da-issue-descricao`, com número positivo e
+sem zeros à esquerda. O prefixo é genérico para suportar as convenções da
+organização, incluindo `feat`, `feature`, `fix`, `chore`, `db`, `docs`,
+`devops`, `hotfix` e equivalentes.
+
+Exemplos válidos:
+
+- `feat/135-desc`
+- `feature/135-nginx-baseline`
+- `fix/104-password-hashing`
+- `chore/20-auto-link-pr-issue`
+- `db/445-sangam-01-m2m-db`
+
+Branches fora desse formato são ignoradas sem erro. Uma branch válida cuja
+issue não exista no mesmo repositório causa erro com diagnóstico explícito.
+
+### Permissões e token
+
+O caller deve conceder somente:
+
+```yaml
+permissions:
+  issues: write
+  pull-requests: read
+```
+
+O reusable usa o `github.token` efêmero do caller. Nenhum PAT ou secret deve
+ser enviado. A mutation `addCloseIssueReferences` exige `issues: write`; a
+leitura dos metadados e vínculos da PR exige `pull-requests: read`.
+
+### Exemplo de caller
+
+```yaml
+name: Vincular PR à issue
+
+on:
+  pull_request:
+    types: [opened, reopened, synchronize]
+
+permissions:
+  issues: write
+  pull-requests: read
+
+jobs:
+  link:
+    uses: Lumus-IT/.github/.github/workflows/reusable-link-pr-issue.yml@reusable-workflows-v5
+    with:
+      pr_number: ${{ github.event.pull_request.number }}
+```
+
+Não há filtro de branch base: PRs destinadas a `develop`, `master` ou outra
+branch seguem o mesmo contrato.
+
+### Segurança e idempotência
+
+- Os metadados da PR são consultados novamente pela API; o caller informa
+  apenas seu número.
+- PRs cujo repositório de origem seja diferente do repositório chamador são
+  ignoradas antes da extração da issue e da mutation. Isso inclui forks.
+- O workflow não faz checkout nem executa conteúdo da branch da PR.
+- Strings provenientes da PR entram no shell somente por variáveis de
+  ambiente ou respostas da API, nunca por interpolação de expressões em
+  comandos.
+- Antes da mutation, o workflow consulta `closingIssuesReferences`. Se o
+  vínculo já existir, encerra com `result=ja_vinculado`.
+- O workflow não executa mutation de fechamento. Depois do vínculo, um
+  eventual fechamento no merge continua sujeito ao comportamento nativo do
+  GitHub para referências de fechamento e à branch de destino da PR.
+- A chave de concorrência serializa execuções da mesma PR e evita corridas em
+  reprocessamentos simultâneos.
+- O caller deve usar `pull_request`, não `pull_request_target`; nenhuma
+  credencial adicional é necessária.
+
+## 4) Build React (`reusable-react-build.yml`)
 
 Este workflow instala as dependências, gera e valida o build de projetos React.
 
