@@ -642,18 +642,6 @@ jobs:
                 head -n1
             })"
 
-            current_status_name="$({
-              echo "${issue_projects_json}" |
-                jq -r --arg project_id "${PROJECT_ID}" '
-                  .data.node.projectItems.nodes[]?
-                  | select(.project.id == $project_id)
-                  | .fieldValues.nodes[]?
-                  | select(.field.name == "Status")
-                  | .name
-                ' |
-                head -n1
-            })"
-
             if [ -z "${project_item_id}" ]; then
               mutation='mutation($projectId:ID!, $contentId:ID!) {
                 addProjectV2ItemById(
@@ -668,22 +656,64 @@ jobs:
                 }
               }'
 
-              add_item_json="$(gh api graphql \
+              add_item_error_file="$(mktemp)"
+              if add_item_json="$(gh api graphql \
                 -f query="${mutation}" \
                 -F projectId="${PROJECT_ID}" \
-                -F contentId="${issue_node_id}")"
+                -F contentId="${issue_node_id}" 2>"${add_item_error_file}")"; then
+                rm -f "${add_item_error_file}"
+                project_item_id="$(echo "${add_item_json}" | jq -r '.data.addProjectV2ItemById.item.id // empty')"
 
-              project_item_id="$(echo "${add_item_json}" | jq -r '.data.addProjectV2ItemById.item.id // empty')"
+                if [ -z "${project_item_id}" ]; then
+                  echo "Falha ao adicionar ${issue_repo_owner}/${issue_repo_name}#${issue_number} no Project."
+                  exit 1
+                fi
 
-              if [ -z "${project_item_id}" ]; then
-                echo "Falha ao adicionar ${issue_repo_owner}/${issue_repo_name}#${issue_number} no Project."
-                exit 1
+                echo "Issue ${issue_repo_owner}/${issue_repo_name}#${issue_number} adicionada ao Project como item ${project_item_id}."
+              else
+                add_item_error="$(cat "${add_item_error_file}")"
+                rm -f "${add_item_error_file}"
+
+                if [ "${add_item_error}" != "gh: Content already exists in this project" ]; then
+                  echo "${add_item_error}" >&2
+                  exit 1
+                fi
+
+                # Outra execução adicionou a issue após a consulta inicial.
+                issue_projects_json="$(gh api graphql \
+                  -f query="${query}" \
+                  -F issueId="${issue_node_id}")"
+                project_item_id="$({
+                  echo "${issue_projects_json}" |
+                    jq -r --arg project_id "${PROJECT_ID}" '
+                      .data.node.projectItems.nodes[]?
+                      | select(.project.id == $project_id)
+                      | .id' |
+                    head -n1
+                })"
+
+                if [ -z "${project_item_id}" ]; then
+                  echo "Conflito ao adicionar ${issue_repo_owner}/${issue_repo_name}#${issue_number}, mas o item não foi encontrado no Project."
+                  exit 1
+                fi
+
+                echo "Issue ${issue_repo_owner}/${issue_repo_name}#${issue_number} já estava no Project (item ${project_item_id})."
               fi
-
-              echo "Issue ${issue_repo_owner}/${issue_repo_name}#${issue_number} adicionada ao Project como item ${project_item_id}."
             else
               echo "Issue ${issue_repo_owner}/${issue_repo_name}#${issue_number} já estava no Project (item ${project_item_id})."
             fi
+
+            current_status_name="$({
+              echo "${issue_projects_json}" |
+                jq -r --arg project_id "${PROJECT_ID}" '
+                  .data.node.projectItems.nodes[]?
+                  | select(.project.id == $project_id)
+                  | .fieldValues.nodes[]?
+                  | select(.field.name == "Status")
+                  | .name
+                ' |
+                head -n1
+            })"
 
             if [ "${status_update_enabled}" = "true" ]; then
               should_skip_triage_downgrade="false"
