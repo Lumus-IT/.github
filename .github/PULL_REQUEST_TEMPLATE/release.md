@@ -1,197 +1,78 @@
-# Release `X.Y.Z` – [Nome do Projeto]
+# 🚀 Release [Projeto] — [Versão ou marco]
 
-**Objetivo:** Consolidar alterações da branch develop/feature para master e publicar versão em produção.
+<!-- Template de release da Lumus IT. Substitua os campos entre colchetes, adapte os itens ao escopo real e remova orientações e seções que não se aplicarem. Não transforme a PR em histórico de desenvolvimento. -->
 
----
+## Resumo
 
-## Resumo da Release
+Esta PR promove as alterações de `[branch de origem]` para `[branch de destino]`, consolidando a release **[versão]** de **[projeto]**.
 
-Descreva de forma executiva o que esta release consolida:
+[Descreva em um ou dois parágrafos o objetivo da publicação e as principais mudanças do ciclo. Registre exceções relevantes, como entregas antecipadas, hotfixes já incorporados ou funcionalidades ainda não ativadas, somente quando aplicáveis.]
 
-- **Pillar 1:** Descrição
-- **Pillar 2:** Descrição
-- **Pillar 3:** Descrição
+## Principais entregas
 
----
+### [Área ou funcionalidade] — [issue(s)]
 
-## Issues Relacionadas
+- [O que foi entregue e qual necessidade atende.]
+- [Mudanças relevantes de comportamento, integração ou interface.]
+- [Restrições e dependências importantes, se houver.]
 
-- Refs [Lumus-IT/repo#123](https://github.com/Lumus-IT/repo/issues/123) – Descrição
-- Refs #456 – Descrição
-- Closes #789 – Descrição
+**Pós-deploy (se aplicável):** [Ação operacional específica e necessária, sem credenciais ou dados sensíveis.]
 
----
+### [Outra área ou funcionalidade] — [issue(s)]
 
-## Mudanças Realizadas
+- [Resuma os resultados consolidados, sem reproduzir todos os commits e testes das PRs de origem.]
+- [Indique dependências externas ou ativações posteriores, se pertinentes.]
 
-### Categoria 1 (ex: DevOps, Features, Bugfixes)
+### 🛠️ Outras melhorias
 
-- **Subseção:** Descrição da mudança
-  - Detalhe 1
-  - Detalhe 2
+- [Correções, atualizações técnicas e ajustes menores relevantes para a release.]
+- [Remova esta subseção caso não existam outras melhorias.]
 
-### Categoria 2
+## Banco de dados
 
-- Descrição
-- Descrição
+<!-- Remova esta seção se a release não alterar banco de dados. Não inclua nomes de servidores, bancos de clientes nem credenciais. -->
 
-### Categoria 3
+[Informe os scripts ou migrations envolvidos, a ordem necessária e as alterações mais relevantes.]
 
-- Descrição
+- [Estruturas ou dados afetados.]
+- [Cuidados de compatibilidade, pré-requisitos ou exceções de execução, quando existirem.]
 
----
+**Cuidados de implantação (se aplicável):** [Backup, migração de dados, indisponibilidade, sincronização, conferências ou recuperação que exijam atenção especial.]
 
-## Ambiente Afetado
+## Checklist de publicação
 
-- [x] Desenvolvimento
-- [x] Local
-- [x] Homologação / Staging
-- [ ] Produção *(validação necessária antes de deploy em PRD)*
+<!-- Mantenha as três etapas abaixo quando aplicáveis. Personalize os itens conforme o projeto e o procedimento vigente. Use "- [x]" apenas para atividades efetivamente concluídas; atividades futuras ficam como passos sem checkbox. Não reabra homologações já aprovadas apenas por causa da release. -->
 
----
+### Pré-merge
 
-## Tipo de Mudança
+- [Conferir que as entregas previstas estão integradas à branch de origem.]
+- [Referenciar revisões, testes e homologações concluídos nas PRs de origem.]
+- [Conferir artefatos, configurações e documentação necessários à publicação.]
 
-- [ ] Bug fix
-- [ ] Nova funcionalidade
-- [ ] Refatoração
-- [ ] Exigência legal / Compliance
-- [ ] Banco de dados / Migration
-- [ ] DevOps / Infraestrutura
-- [ ] Documentação
-- [ ] Testes
+### Release
 
----
+- [Aprovar e realizar a integração na branch estável definida pelo repositório.]
+- [Conferir o commit final da branch estável antes de criar a tag, quando aplicável.]
+- [Publicar a release e suas notas no mecanismo adotado pelo projeto.]
+- [Confirmar que versão, referência e publicação correspondem ao conteúdo aprovado.]
 
-## Como Testar
+### Deploy / implantação (se aplicável)
 
-### Testes Manuais
+- [Confirmar backups, janela de implantação e procedimento de recuperação adequado ao ambiente.]
+- [Aplicar alterações de dados, configurações ou infraestrutura na ordem definida, quando necessárias.]
+- [Atualizar os artefatos da aplicação ou serviço para a versão aprovada.]
+- [Executar as verificações operacionais e os smoke tests proporcionais ao escopo.]
+- [Confirmar a estabilidade e registrar eventuais ativações que ficarão para depois.]
 
-1. **Cenário 1:**
-   - Etapa A
-   - Etapa B
-   - Validar resultado
+## Issues relacionadas
 
-2. **Cenário 2:**
-   - Etapa A
-   - Etapa B
-   - Validar resultado
+Refs [#número], [organização/repositório#número].
 
-3. **Cenário 3:**
-   - Validação
-
-### Comandos de Build/Test
-
-```bash
-# Exemplo de build
-npm run build
-
-# Exemplo de test
-npm test
-
-# Exemplo de start
-npm start
-```
+<!-- Use Closes/Fixes somente para issues que esta PR efetivamente deve encerrar; em releases consolidadoras, normalmente as issues já foram encerradas nas PRs de origem. -->
 
 ---
 
-## Impactos Técnicos
-
-- [ ] Altera banco de dados
-- [ ] Adiciona ou altera endpoint/API
-- [ ] Altera frontend/interface
-- [ ] Altera autenticação/permissões
-- [ ] Altera configuração de ambiente
-- [ ] Altera pipeline/deploy
-- [ ] Altera documentação
-- [ ] Pode impactar performance
-- [ ] Pode impactar segurança
-- [ ] Pode exigir deploy coordenado
-
-**Detalhes:**
-
-- Descrição de impactos técnicos relevantes
-- Dependências com outros repositórios
-- Configurações novas necessárias
-
----
-
-## Segurança
-
-- [ ] Não há senhas, tokens, chaves, cookies ou dados sensíveis no código
-- [ ] Logs não expõem dados sensíveis
-- [ ] Permissões/autorização foram consideradas quando aplicável
-- [ ] Inputs de usuário foram validados quando aplicável
-
----
-
-## Validação Pós-Merge
-
-1. **In Staging:**
-   - Validação A
-   - Validação B
-   - Validação C
-
-2. **In Production (se aplicável):**
-   - Validação 1
-   - Validação 2
-   - Monitorar logs e métricas
-
-3. **Se der errado:**
-   - Ação de rollback 1
-   - Ação de rollback 2
-   - Passos para investigar
-
----
-
-## Plano de Rollback
-
-```bash
-# Rollback de código
-git revert <commit-hash> -m 1
-
-# Rollback de infra (exemplo)
-# helm rollout undo deployment/app-name
-
-# Rollback de banco (se aplicável)
-# kubectl exec <pod> -- psql -c "SELECT * FROM migrations;"
-```
-
----
-
-## Checklist antes do Merge
-
-- [ ] Código revisado
-- [ ] Testes executados (local + staging)
-- [ ] Cenário principal validado
-- [ ] Não houve regressão conhecida
-- [ ] Documentação atualizada, se necessário
-- [ ] Migrations revisadas, se existirem
-- [ ] Variáveis/configurações novas documentadas
-- [ ] Dependências sincronizadas (lockfiles, vendored packages, etc.)
-- [ ] Changelog atualizado (se aplicável)
-- [ ] Tags sincronizadas com `.github` (se aplicável)
-
----
-
-## Estatísticas
-
-- **Commits:** XX desde v.anterior
-- **Arquivos alterados:** XX
-- **Adições:** XXX linhas
-- **Deleções:** XXX linhas
-- **Net change:** +XXX linhas
-
----
-
-## Referências
-
-- [CHANGELOG](./CHANGELOG.md) – Histórico completo
-- [Commits](https://github.com/Lumus-IT/repo/compare/v.anterior...develop)
-- [Documentação](./README.md)
-
----
-
-**Release Lead:** @mention  
-**Data:** YYYY-MM-DD  
-**Versão:** X.Y.Z
+**Versão:** `[versão]`  
+**Ciclo ou marco (se aplicável):** `[identificador]`  
+**Origem:** `[branch de origem]`  
+**Destino:** `[branch de destino]`
